@@ -201,12 +201,26 @@ the session’s changes quickly and consistently with SemVer.
 
 **Commit helper MUST contain**
 
-- **`SemVer / release`:** state explicitly whether this session needs **no version
-  bump**, a **PATCH / MINOR / MAJOR** bump (per [**Versioning, releases, and release
-  notes**](#versioning-releases-and-release-notes)), and whether a **Git tag / GitHub
-  Release** should follow (and which tag shape, e.g. `v0.2.0`). Docs-only chatlog edits
-  usually need **no bump**; user-visible CLI or config behaviour typically needs at
-  least **PATCH** before release.
+- **`SemVer / version bump`:** state explicitly whether this session needs **no bump**
+  or a **PATCH / MINOR / MAJOR** bump (per [**Versioning, releases, and release
+  notes**](#versioning-releases-and-release-notes)). Tie the bump to **what shipped**
+  in the session (docs-only vs user-visible behaviour vs breaking changes). Docs-only
+  chatlog edits usually need **no bump**; user-visible CLI or config behaviour
+  typically needs at least **PATCH** before the next release artefact.
+- **`Tags / GitHub Release`:** **always** fill this block—even when the answer is
+  **none**. Recommend exactly one outcome for this session, grounded in the described
+  changes, for example:
+  - **None:** no new tag; stack commits on the default branch only (explain briefly,
+    e.g. internal docs, CI-only, or follow-up release planned).
+  - **Tag after bump:** specify the **exact tag string** to create after updating
+    `pyproject.toml` and `src/repoman/__init__.py` (e.g. `v0.2.0`). Note whether it is a
+    **pre-release** tag (`v0.2.0-rc.1`, …) and whether the GitHub Release should be
+    marked **pre-release**.
+  - **Release workflow:** when tagging should trigger [`.github/workflows/release.yml`](.github/workflows/release.yml),
+    say so explicitly (push annotated tag `vX.Y.Z` to `origin`).
+  Optionally add a second fenced `bash` block with **copy-paste** `git tag` /
+  `git push origin …` commands **only when** a tag is recommended—omit entirely when
+  **None**.
 - **Suggested commit message:** one imperative subject line; optional scope in
   parentheses (e.g. `docs(chatlogs): …`, `feat(local): …`). Match the gravity of the
   change and call out breaking behaviour in the body or a `BREAKING CHANGE:` footer
