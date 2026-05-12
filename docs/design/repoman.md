@@ -17,7 +17,7 @@ URLs:
 
 # Projekt-Design: `repoman`
 
-> **Status:** MVP Phase 0–1 implementiert (`config` + `doctor`); `local`/`mirrors` folgen laut Roadmap.
+> **Status:** MVP Phase 0–2 (Kern): `config`, `doctor`, `local plan` / `local sync`; `local status` und `mirrors` folgen laut Roadmap.
 > **Verwandt:** `[[vitrum]]` (Obsidian/Markdown-CLI), `nexus` (Windows/OneDrive/M:\
 > Orchestrator). `repoman` schneidet absichtlich Git-Forge-Themen aus `nexus`
 > heraus und macht sie zu einem **eigenständigen, plattformneutralen Tool**.
@@ -764,7 +764,7 @@ Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
       `nexus`-Roadmap entsprechend zurechtschneiden.
 - [ ] Repo `repoman` auf GitHub veröffentlichen (MIT-Lizenz analog `vitrum`).
 - [x] Erste `repoman.yaml.example` (unter `src/repoman/templates/`) und CLI (`config`/`doctor`).
-- [ ] `nexus/.adr.md`: Eintrag „Strike pull/mirror; delegate to repoman“.
 - [x] Phase 0 abschließen (`uv init`, CLI `--version`, Basis-Paket).
 - [x] Phase 1 Kern (`config validate`/`show`/`path`, YAML-Loader, Secrets, Doctor + Tests).
+- [x] Phase 2 Kern — `local plan` / `local sync` (Discovery-Cache, GitLab/GitHub-Listing, Layout, ff-only / fetch-only, Tests).
 - [ ] Pilot-Sync gegen einen kleinen Namespace (`dnmlr/sandbox-…`) ausprobieren.

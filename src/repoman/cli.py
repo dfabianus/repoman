@@ -10,6 +10,7 @@ import yaml
 from repoman import __version__
 from repoman.config import apply_defaults, load_yaml, validate
 from repoman.doctor.runner import run_doctor
+from repoman.local.runner import SyncStrategy, run_local
 from repoman.paths import default_config_path
 from repoman.status import StatusRecord, exit_code_for_records, format_line
 
@@ -100,6 +101,103 @@ def doctor_cmd(skip_network: bool, config: Path | None) -> None:
     for r in records:
         click.echo(format_line(r))
     raise SystemExit(exit_code_for_records(records))
+
+
+@main.group("local")
+def local_cmd() -> None:
+    """Manage local clones under workspace_root (preview-first)."""
+
+
+@local_cmd.command("plan")
+@click.option(
+    "--namespace",
+    multiple=True,
+    metavar="NAME",
+    help="Limit discovery to namespaces with this exact name.",
+)
+@click.option(
+    "--strategy",
+    type=click.Choice(["ff-only", "fetch-only"]),
+    default="ff-only",
+    show_default=True,
+    help="How existing clones align with upstream for preview text.",
+)
+@click.option(
+    "--parallel",
+    type=int,
+    default=None,
+    metavar="N",
+    help="Worker count (defaults to settings.parallelism).",
+)
+@click.option(
+    "--refresh-discovery",
+    is_flag=True,
+    help="Bypass discovery cache TTL and reload listings from APIs.",
+)
+@click.option("--changes-only", is_flag=True, help="Suppress OK-only status lines.")
+@click.option("--config", type=click.Path(path_type=Path), default=None)
+def local_plan_cmd(
+    namespace: tuple[str, ...],
+    strategy: str,
+    parallel: int | None,
+    refresh_discovery: bool,
+    changes_only: bool,
+    config: Path | None,
+) -> None:
+    """Show what ``local sync`` would do without writing to disk."""
+    path = _config_path(config)
+    strat: SyncStrategy = "ff-only" if strategy != "fetch-only" else "fetch-only"
+    recs = run_local(
+        path,
+        namespace_filter=namespace,
+        write=False,
+        parallelism=parallel,
+        refresh_discovery=refresh_discovery,
+        strategy=strat,
+        changes_only_cli=changes_only,
+    )
+    for r in recs:
+        click.echo(format_line(r))
+    raise SystemExit(exit_code_for_records(recs))
+
+
+@local_cmd.command("sync")
+@click.option("--namespace", multiple=True, metavar="NAME")
+@click.option(
+    "--strategy",
+    type=click.Choice(["ff-only", "fetch-only"]),
+    default="ff-only",
+    show_default=True,
+)
+@click.option("--parallel", type=int, default=None, metavar="N")
+@click.option("--refresh-discovery", is_flag=True)
+@click.option("--changes-only", is_flag=True)
+@click.option("--write", is_flag=True, help="Perform clones/fetches/ff-only merges.")
+@click.option("--config", type=click.Path(path_type=Path), default=None)
+def local_sync_cmd(
+    namespace: tuple[str, ...],
+    strategy: str,
+    parallel: int | None,
+    refresh_discovery: bool,
+    changes_only: bool,
+    write: bool,
+    config: Path | None,
+) -> None:
+    """Clone/update repositories under workspace_root."""
+    path = _config_path(config)
+    strat: SyncStrategy = "ff-only" if strategy != "fetch-only" else "fetch-only"
+    recs = run_local(
+        path,
+        namespace_filter=namespace,
+        write=write,
+        parallelism=parallel,
+        refresh_discovery=refresh_discovery,
+        strategy=strat,
+        changes_only_cli=changes_only,
+    )
+    for r in recs:
+        click.echo(format_line(r))
+    raise SystemExit(exit_code_for_records(recs))
 
 
 if __name__ == "__main__":
