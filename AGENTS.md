@@ -151,8 +151,22 @@ When **[`.adr.md`](.adr.md)** exists in this repository:
 - Use GitHub-style tasks only: `- [ ]` open, `- [x]` done; keep completed items in the
   same list for history.
 - Close the checkbox in the **same** merge series as the shipping code.
+- Prefer **small, reviewable slices** (focused commits or PR-sized units): one coherent
+  feature slice, bugfix, or refactor per merge when practical—not one giant diff mixing
+  unrelated concerns.
 
 Until `.adr.md` exists, track intent in GitHub issues; avoid silent scope creep.
+
+### Recommended slice workflow (maintainers & agents)
+
+1. **Open `.adr.md`** — add or refresh checkboxes for the slice scope; defer unrelated work explicitly.
+2. **Implement & test** — code and automated tests for that slice only.
+3. **Verify locally** — `uv sync --all-groups`, `uv run ruff check .`, `uv run ruff format --check .`,
+   `uv run pytest` (match CI).
+4. **Write `docs/chatlogs/…`** when the slice materially changes behaviour or governance.
+5. **Close/update `.adr.md`** (`- [x]` on shipped items, keep historical items inline).
+
+Agents should default to this loop unless a maintainer directs otherwise.
 
 ## Documentation system
 
@@ -178,6 +192,17 @@ theme and **mkdocstrings** for API reference.
   in `.github/workflows/ci.yml`). Until then, design Markdown remains valid without a
   site build.
 
+## Runnable examples (`examples/`)
+
+- Keep **small, well-commented, copy-paste-friendly** artefacts under [`examples/`](examples/)
+  (minimal YAML, short shell wrappers, numbered subfolders) so newcomers can reproduce
+  behaviour **without relying only on pytest**.
+- Prefer **English** comments and placeholders (`example.com`, paths under `/tmp`)—never
+  real tokens or private inventory.
+- When a substantive session ships **user-visible CLI or config** behaviour, it SHOULD add
+  or refresh an **`examples/…`** entry in the **same merge series** as the chatlog (when feasible).
+- Index assumptions and prerequisites in **`examples/README.md`**.
+
 ## Session summaries (`docs/chatlogs/`)
 
 **Required.** After every substantive session (multi-step implementation, non-trivial
@@ -196,8 +221,10 @@ the session’s changes quickly and consistently with SemVer.
 2. Immediately after the closing `---`, the **Commit helper** section MUST be the
    **first Markdown body content**—nothing (no title, no summary) may appear above it
    except the frontmatter block.
-3. If frontmatter is omitted (discouraged), the Commit helper MUST be the very first
-   line of the file.
+3. Next, a **`## How to try`** section (see below) MUST follow the Commit helper—not
+   the narrative summary.
+4. If frontmatter is omitted (discouraged), the Commit helper MUST be the very first
+   line of the file, followed by **`## How to try`**, then the narrative.
 
 **Commit helper MUST contain**
 
@@ -231,12 +258,33 @@ the session’s changes quickly and consistently with SemVer.
   the commit MUST include updates to `pyproject.toml` and `src/repoman/__init__.py`;
   if bump is **separate**, provide a second suggested message and command block or a
   clear two-step sequence.
+- **Git order when tagging a release:** you **never** attach a SemVer tag before the
+  release commit exists locally. Canonical sequence:
+  **`git commit` / `git push` (branch with version bump)** → **`git tag -a vX.Y.Z` on
+  that commit** → **`git push origin vX.Y.Z`** (or `git push --follow-tags`). Pushing only
+  a tag without integrating the commits first leaves detached tags useless for collaborators.
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) shape where helpful
 (`feat`, `fix`, `docs`, `ci`, `chore`, `refactor`, `test`). Align the suggested bump
 with SemVer: breaking public API → **MAJOR** (or MINOR during `0.y.z` per project
 policy—still state it explicitly); new backwards-compatible behaviour → **MINOR**; fixes
 → **PATCH**.
+
+### How to try (mandatory unless N/A)
+
+Right after **`## Commit helper`**, include **`## How to try`** with concrete steps:
+
+- Prefer **`uv run …`** snippets (matching local developer workflow): CLI invocations,
+  minimal config paths (`--config …`), pytest selection, or `./examples/...` scripts where
+  they exist for this repo.
+- For **pure docs / chatlog hygiene** sessions with nothing executable new, write:
+  **`N/A (docs-only).`**
+
+### Session narrative (breadth expected)
+
+Following **How to try**, the storyline MUST stay **English** but need not stay minimal:
+summarize shipped modules/commands, noteworthy edge cases (`SKIP`, cache TTL, parallelism),
+and regression risks a reviewer should skim.
 
 **When to add a file**
 
@@ -256,9 +304,10 @@ Include at least:
 - `links:` — repo-relative paths to touched specs or code (e.g. `AGENTS.md`,
   `docs/design/repoman.md`)
 
-**Content (after Commit helper)**
+**Content (after How to try)**
 
-- English only; concise narrative: goal → decisions → follow-ups.
+- English only; **goal → shipped surface (bullets referencing modules/CLI/options) →
+  decisions → follow-ups**; avoid one-line fluff when the merge is non-trivial.
 - **No secrets**; no customer-specific identifiers.
 
 **Not a substitute for**
@@ -307,8 +356,11 @@ package metadata only—when that migration happens, update this section.
 
 ### Tags and GitHub Releases
 
-- Create an annotated tag **`vX.Y.Z`** on the release commit (leading `v` matches the
-  release workflow).
+- **Ordering:** Merge or push to the integration branch (`main`/`master`) the commit(s)
+  that bump `pyproject.toml` and `src/repoman/__init__.py`; **then** create the **annotated**
+  tag **`vX.Y.Z`** on **that** release commit; **then** push the tag (`git push origin vX.Y.Z`).
+  The release workflow triggers on tag push. The leading `v` matches
+  [`.github/workflows/release.yml`](.github/workflows/release.yml).
 - **Release notes:** the release workflow enables GitHub **auto-generated** notes.
   Maintainers may edit the GitHub Release description for highlights.
 - **Optional `CHANGELOG.md`:** if introduced, follow *[Keep a Changelog](https://keepachangelog.com/)*
