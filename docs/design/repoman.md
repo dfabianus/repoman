@@ -762,7 +762,7 @@ Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
 
 - [x] Entscheidung bestätigen: `repoman` als eigenständiges Python-Tool starten,
       `nexus`-Roadmap entsprechend zurechtschneiden.
-- [ ] Repo `repoman` auf GitHub veröffentlichen (MIT-Lizenz analog `vitrum`).
+- [ ] Repo `repoman` auf GitHub veröffentlichen (MIT-Lizenz — Datei [`LICENSE`](../../LICENSE)).
 - [x] Erste `repoman.yaml.example` (unter `src/repoman/templates/`) und CLI (`config`/`doctor`).
 - [x] Phase 0 abschließen (`uv init`, CLI `--version`, Basis-Paket).
 - [x] Phase 1 Kern (`config validate`/`show`/`path`, YAML-Loader, Secrets, Doctor + Tests).

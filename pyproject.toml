@@ -6,6 +6,7 @@ authors = [
     { name = "Fabian Müller", email = "fabianmueller100295@gmail.com" }
 ]
 requires-python = ">=3.13"
+license = "MIT"
 dependencies = [
     "click>=8.3.3",
     "httpx>=0.28.1",
