@@ -1,12 +1,8 @@
 ---
-Template: "[[ProjectTemplate]]"
-Status: Konzept
-Links:
-  - "[[repoman]]"
-  - "[[vitrum]]"
-  - "[[Repo Cockpit]]"
-Context: Private
-URLs:
+title: repoman design specification
+audience: contributors
+status: active
+see_also:
   - https://python-gitlab.readthedocs.io/
   - https://pygithub.readthedocs.io/
   - https://docs.gitlab.com/ee/api/remote_mirrors.html
@@ -18,9 +14,9 @@ URLs:
 # Projekt-Design: `repoman`
 
 > **Status:** MVP Phase 0–2 (Kern): `config`, `doctor`, `local plan` / `local sync`; `local status` und `mirrors` folgen laut Roadmap.
-> **Verwandt:** `[[vitrum]]` (Obsidian/Markdown-CLI), `nexus` (Windows/OneDrive/M:\
-> Orchestrator). `repoman` schneidet absichtlich Git-Forge-Themen aus `nexus`
-> heraus und macht sie zu einem **eigenständigen, plattformneutralen Tool**.
+> **Kontext:** `repoman` ist ein **eigenständiges, plattformneutrales** CLI-Werkzeug für Forge-Discovery,
+> lokale Workspaces und Mirror-Konfiguration. Es kann neben anderen Automatisierungs- oder
+> Dokumentations-Tools eingesetzt werden; getrennte Projekte behalten jeweils eigene Konfiguration.
 
 ## 1. Mission und Scope
 
@@ -46,12 +42,11 @@ URLs:
 
 - Keine Repo-CRUD-Operationen auf Remote-Seite (kein Create/Delete/Archive — das
   bleibt `gh`/`glab`/Web-UI).
-- Keine Issue-/MR-/PR-Spiegel (das ist `[[Repo Cockpit]]`-Territorium).
-- Keine Obsidian-/Markdown-Generierung — gehört zu `[[vitrum]]`. `repoman` kann
-  später eine **strukturierte Datenquelle** (JSON-Status) liefern, die `vitrum`
-  rendert; aber keine eigene Renderer-Schicht.
-- Kein OneDrive-/`M:\`-/WSL-Setup — gehört zu `nexus`.
-- Keine Frontmatter-Normalisierung — gehört zu `vitrum`.
+- Keine Issue-/MR-/PR-Spiegel (eigenständige „Cockpit“- oder Ticket-Spiegel-Tools).
+- Keine eingebaute Markdown-/Wiki-Renderer-Schicht — `repoman` kann später **strukturierte Daten** (JSON-Status)
+  exportieren, die andere Tools rendern; keine eigene Renderer-Schicht.
+- Kein anbieterspezifisches Cloud-Sync- oder Laufwerks-Setup (bleibt außerhalb des Scopes).
+- Keine Frontmatter-/Notiz-Normalisierung (bleibt außerhalb des Scopes).
 - Kein Secret-Storage als Feature — `repoman` **liest** nur Tokens (siehe §6).
 - Kein bidirektionaler Mirror — ausdrücklich nur einseitige Datenflüsse pro
   Mirror-Eintrag.
@@ -61,8 +56,8 @@ URLs:
 > *„Tracke per Default **alle** Repositories in einem Namespace; erlaube
 > Include/Exclude für Sonderfälle.“*
 
-Konkret: ein YAML-Eintrag `namespaces: [{ remote: gitlab, name: dnmlr, include_subgroups: true }]`
-genügt, um die ganze Gruppe in `~/repositories/gitlab/dnmlr/<repo>` zu halten.
+Konkret: ein YAML-Eintrag `namespaces: [{ remote: gitlab, name: acme-org, include_subgroups: true }]`
+genügt, um die ganze Gruppe in `~/repositories/gitlab/acme-org/<repo>` zu halten.
 Filter werden additiv darauf gelegt (`include`, `exclude` mit Glob-Pattern).
 
 ## 2. Verwandte Tools und Abgrenzung
@@ -85,9 +80,9 @@ Vor der Implementierung wurde der Markt gesichtet. Wichtigste Findings:
 einheitlichem Status-Vokabular, einer YAML als SSOT und einem ausdrücklichen
 Preview-First-Anspruch.
 
-Beide Vorbild-Tools (`ghorg`, `gickup`) sind in **Go**. Wir bauen `repoman`
-trotzdem in **Python** (siehe §3), behalten uns aber vor, einzelne dieser Tools
-in Phase 2 als alternative Backends optional aufzurufen.
+Beide Vorbild-Tools (`ghorg`, `gickup`) sind in **Go**. `repoman` wird
+trotzdem in **Python** implementiert (siehe §3); optional können in Phase 2 einzelne dieser Tools
+als alternative Backends angebunden werden.
 
 ## 3. Technologie-Entscheidungen
 
@@ -95,8 +90,8 @@ in Phase 2 als alternative Backends optional aufzurufen.
 
 Begründet, weil:
 
-- Dein gesamter CLI-Stack (`vitrum`, `nexus`) ist Python; identische Idiome,
-  Tests, Linting, Docs — kein Kontextwechsel.
+- Ein Python-CLI-Ökosystem profitiert von identischen Idiomen für Tests, Linting und
+  Dokumentation — kein Kontextwechsel.
 - `python-gitlab` ist die reichhaltigste, typgepflegteste GitLab-Library und
   hat **direkte Unterstützung für `project.remote_mirrors`** — genau der
   Mirror-Kern.
@@ -114,7 +109,7 @@ nicht zu Preview-First / Idempotenz-Disziplin. Alle Git-Aufrufe sind
 
 | Bereich | Werkzeug |
 |---|---|
-| Paket-/Env-Manager | **uv** (siehe `user_rule`) |
+| Paket-/Env-Manager | **uv** (siehe `AGENTS.md`) |
 | CLI-Framework | `click` |
 | Konfig-Format | YAML (`pyyaml`) |
 | HTTP | `httpx` (für direkte API-Calls, falls Lib fehlt) |
@@ -127,9 +122,9 @@ nicht zu Preview-First / Idempotenz-Disziplin. Alle Git-Aufrufe sind
 | Doku | `mkdocs-material` mit `mkdocstrings` |
 
 Dependencies werden **ausschließlich** über `uv add` gepflegt — `pyproject.toml`
-`[dependencies]`-Sektion ist nicht manuell zu editieren (analog `vitrum`/`nexus`).
+`[dependencies]`-Sektion ist nicht manuell zu editieren (wie in `AGENTS.md` beschrieben).
 
-### 3.3 Designprinzipien (übernommen aus `vitrum`/`nexus`)
+### 3.3 Designprinzipien (übernommen aus bewährten Python-CLI-Mustern)
 
 | Prinzip | Konkret bei `repoman` |
 |---|---|
@@ -148,8 +143,8 @@ repoman/
   pyproject.toml             # uv-managed
   uv.lock
   README.md
-  AGENTS.md                  # KI-Mitarbeiter-Regeln, analog vitrum
-  .adr.md                    # living backlog (Format wie nexus)
+  AGENTS.md                  # Contributor- und Agenten-Richtlinien
+  .adr.md                    # Living backlog (Checkboxen)
   src/repoman/
     __init__.py
     __main__.py
@@ -265,7 +260,7 @@ remotes:
 # Default-Use-Case: ganze Namespaces tracken.
 namespaces:
   - remote: gitlab
-    name: "dnmlr"                  # Group-Pfad in GitLab
+    name: "acme-org"                 # Group-Pfad in GitLab
     include_subgroups: true
     # optionale Filter, additiv:
     include: ["**/*"]              # Glob gegen den vollen Pfad ohne Group-Prefix
@@ -276,7 +271,7 @@ namespaces:
     visibility: [public, private]
 
   - remote: github
-    name: "dfabianus"              # GitHub user/org
+    name: "example-user"           # GitHub user/org
     visibility: [public, private]
     include: ["**/*"]
     exclude: ["**/*-archive"]
@@ -289,9 +284,9 @@ repos:
 
 # Mirror-Beziehungen (orthogonal zu lokalem Klon)
 mirrors:
-  - id: "sensor-fusion"            # stabiler Identifier, nicht generierter Slug
-    source: { remote: gitlab, path: "dnmlr/sensor-fusion" }
-    target: { remote: github, path: "dfabianus/sensor-fusion" }
+  - id: "widget-sync"             # stabiler Identifier, nicht generierter Slug
+    source: { remote: gitlab, path: "acme-org/widget" }
+    target: { remote: github, path: "example-user/widget" }
     direction: push                # push | pull
     backend: gitlab_remote_mirror  # MVP: nur dieser Wert
     enabled: true
@@ -302,12 +297,12 @@ mirrors:
 
 ### 5.2 Mehrere Config-Dateien (Phase 2)
 
-Variante B (analog `nexus`): `repoman.yaml` enthält nur `version`, `settings`,
+Variante B (analog getrenntem „Sets“-Konzept): `repoman.yaml` enthält nur `version`, `settings`,
 `paths`, `remotes`. Namespaces, Repos und Mirrors liegen in
 `~/.config/repoman/sets/*.yaml` und werden per `includes:` referenziert. Im MVP
 genügt eine Datei.
 
-==> Design Decision vom User: Auf jeden Fall 5.1 NUR eine globale Konfigurationsdatei, sonst wird es zu unübersichtlich!
+**Hinweis (MVP):** Eine zentrale `repoman.yaml` pro Maschine; mehrere Dateien / `includes:` bleiben Phase 2.
 
 ### 5.3 Schema-Validierung
 
@@ -406,7 +401,9 @@ repoman mirrors list   [--json]
 repoman mirrors lock   [--write]                # schreibt repoman.lock
                        # erfasst aktuellen Server-Zustand aller Mirrors
 ```
-==> Brauchen wir einen "repoman config setup" Befehl, um z.b. aus einem template zu bootstrappen in z.b. ~/.repoman ? Oder direkt ~/.repoman.yaml oder toml. Hängt davon ab ob wir noch mehr im repoman konfigurationsordner brauchen.
+**Offene Produktfrage:** Brauchen wir einen `repoman config setup` Befehl, um z. B. aus einem Template
+eine erste Konfiguration zu erzeugen? Abhängig davon, welche weiteren Dateien neben `repoman.yaml`
+im Konfigurationsverzeichnis liegen sollen.
 
 Bewusst **nicht** im MVP:
 
@@ -436,15 +433,15 @@ Exit-Codes:
 ### 7.2 Beispiel-Output
 
 ```text
-$ repoman local sync --namespace dnmlr
-OK            workspace_root             /home/donabaum/repositories exists
+$ repoman local sync --namespace acme-org
+OK            workspace_root             ~/repositories exists
 OK            remotes.gitlab.api         200 https://gitlab.example.com/api/v4
-OK            discovery.dnmlr            42 repos (cache age 14m)
-WOULD UPDATE  dnmlr/sensor-fusion        clone https → ./gitlab/dnmlr/sensor-fusion
-WOULD UPDATE  dnmlr/process-modeling     pull --ff-only (4 commits behind)
-SKIP          dnmlr/legacy-foo           non-ff: 2 ahead, 3 behind
-OK            dnmlr/utils                up-to-date
-ERROR         dnmlr/secret-stuff         403 from GitLab (token lacks read scope)
+OK            discovery.acme-org         42 repos (cache age 14m)
+WOULD UPDATE  acme-org/widget            clone https → ./gitlab/acme-org/widget
+WOULD UPDATE  acme-org/service-a         pull --ff-only (4 commits behind)
+SKIP          acme-org/legacy-app       non-ff: 2 ahead, 3 behind
+OK            acme-org/utils            up-to-date
+ERROR         acme-org/private-proj     403 from GitLab (token lacks read scope)
 ```
 
 ## 8. Feature-Detail: `local sync`
@@ -519,7 +516,7 @@ Für jeden Mirror-Eintrag mit `backend: gitlab_remote_mirror`:
    Wenn Drift in Feldern:                     PATCH .../:mirror_id → WOULD UPDATE / UPDATED
    Wenn alles passt:                          OK / SKIP
 5. Token-URL: https://oauth2:${TARGET_TOKEN}@<target.host>/<target.path>.git
-   Token im Server-Mirror ist GitLab-side gespeichert; wir setzen ihn beim POST.
+   Token im Server-Mirror ist GitLab-seitig gespeichert; die API-Anfrage übergibt ihn beim POST.
 6. Audit-Log: jede schreibende Operation mit Zeitstempel, mirror.id, Aktion.
 ```
 
@@ -535,9 +532,9 @@ Optional generiert via `repoman mirrors lock --write`. Format YAML/JSON:
 version: 1
 generated_at: 2026-05-12T20:35:00Z
 mirrors:
-  - id: sensor-fusion
-    source: { remote: gitlab, project_id: 1234, path: dnmlr/sensor-fusion }
-    target: { remote: github, path: dfabianus/sensor-fusion }
+  - id: widget-sync
+    source: { remote: gitlab, project_id: 1234, path: acme-org/widget }
+    target: { remote: github, path: example-user/widget }
     server_state:
       mirror_id: 87
       enabled: true
@@ -557,7 +554,7 @@ Zweck: reproduzierbarer Server-Zustand, gut für Diffs in Reviews. Lock-File ist
 JSON-Lines:
 
 ```json
-{"ts":"2026-05-12T20:35:01Z","action":"mirror.create","mirror_id":"sensor-fusion","source":"gitlab:dnmlr/sensor-fusion","target":"github:dfabianus/sensor-fusion","result":"ok","http_status":201}
+{"ts":"2026-05-12T20:35:01Z","action":"mirror.create","mirror_id":"widget-sync","source":"gitlab:acme-org/widget","target":"github:example-user/widget","result":"ok","http_status":201}
 ```
 
 Tokens **werden vor dem Loggen redacted**.
@@ -565,8 +562,7 @@ Tokens **werden vor dem Loggen redacted**.
 ### 9.4 Backend: `local_push` (Phase 2)
 
 Für Konstellationen, in denen kein server-seitiger Mirror möglich ist (z. B.
-GitLab CE Pull-Mirror nicht verfügbar, oder Quelle ist GitHub und Ziel das
-firmen-GitLab):
+GitLab CE Pull-Mirror nicht verfügbar, oder Quelle ist GitHub und Ziel ein **selbst gehostetes GitLab**):
 
 ```text
 cache_dir = ${cache_root}/mirror-cache/<mirror.id>.git
@@ -584,7 +580,7 @@ des `workspace_root` und werden nie als Working-Tree benutzt.
 Idee: `repoman` generiert eine GitHub-Action `.github/workflows/mirror.yml`
 samt nötigem Secret-Set via `gh secret set`. Diese Action pusht periodisch an
 ein Ziel. Sinnvoll für Open-Source-Repos, deren SSOT auf GitHub liegt und die
-zusätzlich nach Festo-GitLab gespiegelt werden sollen. Im MVP nicht enthalten,
+zusätzlich in ein **internes GitLab** gespiegelt werden sollen. Im MVP nicht enthalten,
 weil es Schreibrechte auf das Source-Repo erfordert (Workflow-Datei) — das ist
 ein anderer Bedrohungsbereich als reine Konfiguration.
 
@@ -595,7 +591,7 @@ Filter wirken **nach** dem API-Listing, **bevor** geplant wird.
 ```yaml
 namespaces:
   - remote: gitlab
-    name: dnmlr
+    name: acme-org
     include_subgroups: true
     include:
       - "**/*"
@@ -608,7 +604,7 @@ namespaces:
 Regeln:
 
 - `include` ist eine Liste von Globs gegen den **relativen Pfad** unterhalb
-  `namespace.name` (also `archived/foo`, nicht `dnmlr/archived/foo`).
+  `namespace.name` (also `archived/foo`, nicht `acme-org/archived/foo`).
 - `exclude` läuft **nach** `include` und entfernt Treffer.
 - Default ohne beide Listen: `include: ["**/*"]`, kein Exclude — also alles.
 - Glob-Engine: `pathlib.PurePosixPath.match` (`**`-tauglich via `fnmatch`).
@@ -658,7 +654,7 @@ GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):
 | 0 | Repo aufsetzen, `uv init`, leeres CLI mit `--version` | `uv run repoman --version` |
 | 1 | `config validate`, `doctor`, Loader, Secrets-Resolver, Token-Doctor | YAML laden + Tokens auflösen + Remote-Probe |
 | 2 | `local plan` / `local sync` (gitlab+github), Filter, Cache | 1 Group mit 5 Repos auf Festplatte; Konflikte werden geskippt |
-| 3 | `local status` (ahead/behind/dirty), `--json`-Output | Cockpit-Tabelle parsbar |
+| 3 | `local status` (ahead/behind/dirty), `--json`-Output | Tabellen-/JSON-Output für Automation |
 | 4 | `mirrors plan` / `mirrors sync` mit `gitlab_remote_mirror` | Test-Repo-Paar wird idempotent konfiguriert; Audit-Log geschrieben |
 | 5 | `mirrors lock`, Drift-Erkennung, bessere Doctor-Checks | Lock-File reproduziert Server-Zustand |
 | 6 | `local_push`-Backend, `--submodules`, `--fix-remotes` | Fallback-Mirror lauffähig |
@@ -666,49 +662,44 @@ GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):
 
 Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
 
-## 13. Verhältnis zu `nexus`
+## 13. Integration mit anderen Werkzeugen
 
-- `nexus` **streicht** die geplanten Subkommandos `pull` und `mirror` aus seiner
-  Roadmap. Die entsprechenden Use-Cases sollen über `repoman` abgedeckt werden.
-- `nexus` darf später `repoman` als **Python-Dependency** importieren oder als
-  Subprozess aufrufen (z. B. innerhalb einer projektbezogenen Aktion: „klone
-  mir die Repos dieses Projekts in den WSL-Tree“).
-- Konfigurations-Loader bleibt **getrennt** — `repoman` hat keine
-  Repo-Liste in `nexus.yaml`. Wenn `nexus` projektgebunden klonen will, übergibt
-  es eine kleine `repoman`-konforme Repo-Liste per CLI-Args/Stdin.
-- Eintrag in `nexus/.adr.md`:
-  *„Strike `pull`/`mirror` from nexus scope; delegate to `repoman`.“*
+- Externe **Workspace- oder Setup-Orchestrierer** können `repoman` als **Python-Dependency**
+  importieren oder per **Subprozess** aufrufen (z. B. „Klone die Repos dieses Projekts in einen
+  vorgegebenen Baum“).
+- **Konfiguration bleibt getrennt:** `repoman` liest nur `repoman.yaml` (und referenzierte Includes
+  in späteren Phasen). Fremde Tools übergeben bei Bedarf eine kleine, `repoman`-konforme
+  Repo-/Namespace-Liste per **CLI-Argumenten oder Stdin** — keine implizite Kopplung an fremde
+  YAML-Schemata.
+- Koordination mit anderen Projekten (Roadmaps, Backlog-Dateien) erfolgt **außerhalb** dieses
+  Repos; dieses Dokument beschreibt ausschließlich die öffentliche `repoman`-Oberfläche.
 
 ## 14. Open Design Decisions
 
-- **Pydantic vs. plain dict + Validation**: erstmal plain dicts mit
-  manuellen `validate_*`-Funktionen (wie `nexus`), Pydantic in Phase 2, wenn
-  Schema groß wird.
-- **`clone_protocol` Default**: `https` (mit Token) oder `ssh`? Vorschlag: pro
-  Remote konfigurierbar, Default `https` für GitLab (Tokens vorhanden), `ssh`
-  für GitHub (SSH-Keys verbreitet).
-  ==> sehr gut frei konfigurierbar pro Remote, default sollte aber ssh sein für alle remotes.
-- **`namespace` als Konzept für GitHub**: ein GitHub-User ist eigentlich kein
-  Namespace, sondern „repos owned by user/org“. Wir verallgemeinern absichtlich
-  und nennen es weiter `namespace`. Doku muss das klarstellen.
-  ==> Dann lass uns am besten auch in der Dokumentation nachher von user/org sprechen.
-- **`repoman.lock`-Format**: YAML (gut lesbar) oder TOML (typisierter)? Vorschlag
-  YAML, weil Diffs mit `repoman.yaml` direkt vergleichbar bleiben.
-  ==> gerne wenn es sauberer ist auf TOML umsteigen. Ich weiß dass viele andere Tools (wie Python uv z.b. und auch andere Programmiersprachen) viel mit TOML arbeiten zur Konfiguration. Aber es muss Sinn machen in unserem Fall.
-- **Soft-Delete / Prune**: Wann darf `repoman` lokale Klone entfernen, die
-  nicht mehr in der Konfig stehen? Erstmal **nie automatisch** — nur per
-  `repoman local prune --write` (Phase 3+).
-  ==> da stimme ich zu.
-- **Bidirektionale Mirrors**: bewusst nicht. Wer das will, definiert zwei
-  einseitige Einträge — und akzeptiert das Konflikt-Risiko explizit.
-  ==> Ich stimme zu. Beidseitige Mirrors sind aus meiner Sicht EXTREM fehleranfällig. Der Grund für die Mirrors ist, dass ich meistens überwiegend auf meinem privaten PC für github entwickeln will, aber ich die software oft auf dem Firmen PC (mit github und gitlab intern Zugriff) nutzen möchte. Bei manchen Projekten möchte ich aber mit den internen Kollegen zusammen kollaborativ entwickeln, dort bietet es sich dann an Gitlab als SSOT zu haben und zu GitHub zu spiegeln. in dem Fall können wir vielleicht keinen offiziellen GitLab push mirror verwenden, sondern müssen eine andere Lösung verwenden (z.b. Github pull oder "manuelle" git Befehle?) Oben sind ja einige Möglichkeiten schon definiert.
-- **Multi-Tenant-Configs**: Eine Datei pro Maschine, oder Profil-Dateien mit
-  `--profile work`? MVP: ein `repoman.yaml`; Profile in Phase 2 via
-  `${REPOMAN_PROFILE}`.
-  ==> Richtig, eine Datei pro Maschine reicht erstmal. Wir brauchen keine unterschiedlichen Profile.
-- **Erst CLI, später Library**: API-Surface der Python-Module wird absichtlich
-  intern gehalten (alles unter `repoman._internal` oder per `__all__`
-  beschränken), damit wir Phase-2-API-Brüche nicht eingehen.
+- **Pydantic vs. plain dict + Validation**: zunächst plain dicts mit manuellen `validate_*`-Funktionen;
+  Pydantic in Phase 2, wenn das Schema wächst.
+- **`clone_protocol` Default**: `https` (mit Token) oder `ssh`? Vorschlag: pro Remote konfigurierbar;
+  Default `https` für GitLab (Tokens vorhanden), `ssh` für GitHub (SSH-Keys verbreitet).
+  **Entscheidung / Hinweis:** pro Remote frei wählbar; Default **`ssh`** für alle Remotes, sofern
+  nicht anders gesetzt (vereinfacht lokale Agent-Setups ohne Token in der Remote-URL).
+- **`namespace` als Konzept für GitHub**: ein GitHub-User ist eigentlich kein Namespace, sondern
+  „repos owned by user/org“. Absichtlich verallgemeinert als `namespace`; in der Doku klar als
+  **user/org** erklären.
+- **`repoman.lock`-Format**: YAML (gut lesbar) oder TOML (typisierter)? Vorschlag YAML, weil Diffs
+  mit `repoman.yaml` vergleichbar bleiben. **Hinweis:** TOML ist möglich, sobald Lesbarkeit vs.
+  Tooling klar zugunsten von TOML spricht (ähnlich wie bei Lockfiles in anderen Ökosystemen).
+- **Soft-Delete / Prune**: lokale Klone, die nicht mehr in der Konfig stehen, **nie automatisch**
+  löschen — nur per `repoman local prune --write` (Phase 3+).
+- **Bidirektionale Mirrors**: bewusst nicht; wer bidirektionale Flüsse braucht, definiert **zwei**
+  einseitige Einträge und akzeptiert Konflikt-Risiko. Typische Muster: eine Forge als SSOT mit
+  einseitigem Push-Spiegel; wenn **GitLab-Push-Mirrors** ungeeignet sind (Policy, Edition, Quelle
+  auf GitHub), greifen spätere Backends (`local_push`, GitHub Actions, manuelle Git-Läufe) — siehe
+  Roadmap und §9.
+- **Multi-Tenant-Configs**: Eine Datei pro Maschine, oder Profil-Dateien mit `--profile work`?
+  MVP: ein `repoman.yaml`; Profile in Phase 2 via `${REPOMAN_PROFILE}`. **MVP-Entscheidung:**
+  eine Datei pro Maschine reicht zunächst; getrennte Profile sind optional.
+- **Erst CLI, später Library**: API-Surface der Python-Module absichtlich **intern** halten
+  (`repoman._internal` oder eingeschränktes `__all__`), um API-Brüche während Phase 2 zu vermeiden.
 - **Discovery-Caching im CI**: in CI deaktivieren (`CI=true` → TTL 0). Doku-Hinweis.
 
 ## 15. Sicherheits- und IP-Hinweise
@@ -723,13 +714,13 @@ Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
   Konkrete Firmen- oder Kunden-Identifier nur in der user-lokalen `repoman.yaml`.
 - **Vertragliche Abklärung**: Spiegeln von firmen-internen Repos auf öffentlich
   zugängliche GitHub-Repos bleibt eine **organisatorische** Entscheidung — das
-  Tool macht es technisch sicher, aber nicht freiwillig erlaubt.
-  ==> ganz genau. daher auch spiegeln auf private repos wichtig.
+  Tool macht es technisch möglich, erzwingt aber keine Compliance-Entscheidung.
+  **Hinweis:** Private Ziel-Repos reduzieren das Offenlegungsrisiko.
 
 ## 16. Konkrete erste Schritte (Phase 0/1)
 
 1. Repo `repoman` auf GitHub anlegen, `uv init`.
-2. `pyproject.toml` analog `vitrum`: `click`, `pyyaml`, `python-gitlab`,
+2. `pyproject.toml` mit einem typischen Python-CLI-Stack: `click`, `pyyaml`, `python-gitlab`,
    `PyGithub`, `httpx`; `dev`-Gruppe `ruff`, `pytest`, `pytest-cov`,
    `pytest-httpx`, `mkdocs-material`, `mkdocstrings`.
 3. CLI-Skelett (`__main__.py`, `cli.py` mit `--version`, `config validate`,
@@ -739,17 +730,11 @@ Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
    `whoami` + `list_namespace`).
 6. `doctor` ruft Resolver + Whoami auf und gibt Status-Zeilen aus.
 7. CI-Pipeline (ruff, pytest, mkdocs build).
-8. Erst danach `local sync` gegen ein Pilot-Namespace.
+8. Erst danach `local sync` gegen einen kleinen Pilot-Namespace unter eigener Kontrolle testen.
 
 ## 17. Referenzen
 
-- `[[repoman]]` — Brainstorm und ursprüngliche Frage-Antwort-Sammlung.
-- `[[vitrum]]` — Designvorlage für CLI-Architektur (Filesystem-first,
-  Preview-first, Click).
-- `[[Repo Cockpit]]` — verwandte, aber **andere** Idee (Issues/PRs als
-  Obsidian-Spiegel). `repoman` liefert dafür gegebenenfalls Inventardaten.
-- `nexus/docs/design/nexus.md` — Quelle vieler Architekturentscheidungen;
-  `repoman` ist die Repo-zentrische Ausgliederung.
+- Öffentliche Dritt-Anleitungen und APIs (siehe YAML-`see_also`-Liste im Kopf dieses Dokuments).
 - `python-gitlab`: <https://python-gitlab.readthedocs.io/>
 - GitLab Remote Mirror API:
   <https://docs.gitlab.com/ee/api/remote_mirrors.html>
@@ -760,11 +745,11 @@ Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
 
 ## 18. Naechste Schritte
 
-- [x] Entscheidung bestätigen: `repoman` als eigenständiges Python-Tool starten,
-      `nexus`-Roadmap entsprechend zurechtschneiden.
+- [x] Entscheidung bestätigen: `repoman` als eigenständiges Python-Tool; begleitende
+      Workspace-Roadmaps extern koordinieren.
 - [ ] Repo `repoman` auf GitHub veröffentlichen (MIT-Lizenz — Datei [`LICENSE`](../../LICENSE)).
 - [x] Erste `repoman.yaml.example` (unter `src/repoman/templates/`) und CLI (`config`/`doctor`).
 - [x] Phase 0 abschließen (`uv init`, CLI `--version`, Basis-Paket).
 - [x] Phase 1 Kern (`config validate`/`show`/`path`, YAML-Loader, Secrets, Doctor + Tests).
 - [x] Phase 2 Kern — `local plan` / `local sync` (Discovery-Cache, GitLab/GitHub-Listing, Layout, ff-only / fetch-only, Tests).
-- [ ] Pilot-Sync gegen einen kleinen Namespace (`dnmlr/sandbox-…`) ausprobieren.
+- [ ] Pilot-Sync gegen einen kleinen Namespace unter eigener Kontrolle ausprobieren (z. B. `<org>/sandbox-*`).
