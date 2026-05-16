@@ -19,6 +19,7 @@ def _facts(
     ahead: int = 0,
     behind: int = 0,
     origin_url: str | None = "git@github.com:o/r.git",
+    last_fetch_epoch: float | None = None,
 ) -> RepoWorktreeFacts:
     return RepoWorktreeFacts(
         path_missing=path_missing,
@@ -32,6 +33,7 @@ def _facts(
         ahead=ahead,
         behind=behind,
         origin_url=origin_url,
+        last_fetch_epoch=last_fetch_epoch,
     )
 
 

@@ -38,4 +38,27 @@ def test_local_help_registered() -> None:
     runner = CliRunner()
     out = runner.invoke(main, ["local", "--help"])
     assert out.exit_code == 0
-    assert "plan" in out.output and "sync" in out.output
+    assert "plan" in out.output and "sync" in out.output and "status" in out.output
+
+
+def test_local_status_no_targets_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    cfg = tmp_path / "repoman.yaml"
+    cfg.write_text(
+        yaml.safe_dump(
+            {
+                "version": SCHEMA_VERSION,
+                "paths": {"workspace_root": str(tmp_path / "ws")},
+                "remotes": {},
+                "namespaces": [],
+                "repos": [],
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    out = runner.invoke(main, ["local", "status", "--config", str(cfg), "--json"])
+    assert out.exit_code == 0
+    assert '"schema_version": 1' in out.output
+    assert '"repositories": []' in out.output

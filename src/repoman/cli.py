@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import click
@@ -10,7 +11,8 @@ import yaml
 from repoman import __version__
 from repoman.config import apply_defaults, load_yaml, validate
 from repoman.doctor.runner import run_doctor
-from repoman.local.runner import SyncStrategy, run_local
+from repoman.local.runner import SyncStrategy, run_local, run_local_status
+from repoman.local.status_report import status_payload_to_json_dict
 from repoman.paths import default_config_path
 from repoman.status import StatusRecord, exit_code_for_records, format_line
 
@@ -198,6 +200,47 @@ def local_sync_cmd(
     for r in recs:
         click.echo(format_line(r))
     raise SystemExit(exit_code_for_records(recs))
+
+
+@local_cmd.command("status")
+@click.option("--namespace", multiple=True, metavar="NAME")
+@click.option("--parallel", type=int, default=None, metavar="N")
+@click.option("--refresh-discovery", is_flag=True)
+@click.option("--changes-only", is_flag=True, help="Suppress OK-only status lines.")
+@click.option("--json", "json_output", is_flag=True, help="Emit machine-readable JSON.")
+@click.option("--config", type=click.Path(path_type=Path), default=None)
+def local_status_cmd(
+    namespace: tuple[str, ...],
+    parallel: int | None,
+    refresh_discovery: bool,
+    changes_only: bool,
+    json_output: bool,
+    config: Path | None,
+) -> None:
+    """Report ahead/behind, dirty state, and clone presence (read-only)."""
+    path = _config_path(config)
+    result = run_local_status(
+        path,
+        namespace_filter=namespace,
+        parallelism=parallel,
+        refresh_discovery=refresh_discovery,
+        changes_only_cli=changes_only,
+    )
+    all_records = list(result.prelude) + list(result.repo_lines)
+    if json_output:
+        payload = status_payload_to_json_dict(
+            schema_version=1,
+            workspace_root=str(result.workspace_root),
+            prelude=list(result.prelude),
+            repositories=list(result.snapshots),
+        )
+        click.echo(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        for rec in result.prelude:
+            click.echo(format_line(rec))
+        for rec in result.repo_lines:
+            click.echo(format_line(rec))
+    raise SystemExit(exit_code_for_records(all_records))
 
 
 if __name__ == "__main__":

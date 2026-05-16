@@ -8,10 +8,11 @@ the vocabulary **`OK`** · **`WOULD UPDATE`** · **`UPDATED`** · **`SKIP`** · 
 - **`repoman doctor`** — tokens and optional API reachability (GitLab/GitHub).
 - **`repoman local plan`** / **`repoman local sync`** — namespace discovery with cache, layout
   under `workspace_root`, guarded `fetch` / `merge --ff-only` (writes only with **`--write`**).
+- **`repoman local status`** — read-only ahead/behind, dirty, and clone presence; optional **`--json`**.
 See the product spec:
 - **[`docs/design/repoman.md`](docs/design/repoman.md)** — scope, roadmap, behaviour.
 - **`examples/`** — minimal, commented configs and copy-paste commands.
-Not yet shipped: `local status` / `--json`, `mirrors` subcommands — see roadmap in the design doc.
+Not yet shipped: `mirrors` subcommands — see roadmap in the design doc.
 ## Requirements
 - **Python ≥ 3.13**
 - **Git** on `PATH`
@@ -42,6 +43,7 @@ Releases.)
 uv run repoman config validate
 uv run repoman doctor                      # probes APIs unless --skip-network
 uv run repoman local plan                  # preview; no clones
+uv run repoman local status                # read-only; add --json for automation
 uv run repoman local sync --write          # clones / fetch / ff-only merges
 ```
 Safety: **`local sync` without `--write` is preview-only**; dirty trees and non-fast-forward states

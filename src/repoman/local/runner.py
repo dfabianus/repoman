@@ -21,6 +21,7 @@ from repoman.local.clone_url import authenticated_clone_url
 from repoman.local.git_ops import git_clone, git_fetch, git_merge_ff_only
 from repoman.local.planner import plan_local_sync
 from repoman.local.status_probe import probe_worktree
+from repoman.local.status_report import RepoStatusSnapshot, summarize_local_repo_status
 from repoman.paths import credentials_path_for_config, render_layout
 from repoman.remotes.catalog import ListedProject
 from repoman.remotes.clone_urls import synthesized_clone_urls
@@ -32,6 +33,29 @@ from repoman.status import StatusRecord
 
 ForgeKind = Literal["gitlab", "github"]
 SyncStrategy = Literal["ff-only", "fetch-only"]
+
+
+@dataclass(frozen=True)
+class LocalWorkspaceContext:
+    """Shared outcome of config load + namespace discovery."""
+
+    workspace_root: Path
+    cache_root: Path
+    targets: tuple[WorkspaceRepo, ...]
+    remotes: dict[str, Any]
+    credentials_path: Path
+    changes_only_mode: bool
+    parallelism_default: int
+
+
+@dataclass(frozen=True)
+class LocalStatusResult:
+    """Read-only status run: prelude lines, per-repo lines, and structured snapshots."""
+
+    prelude: tuple[StatusRecord, ...]
+    repo_lines: tuple[StatusRecord, ...]
+    snapshots: tuple[RepoStatusSnapshot, ...]
+    workspace_root: Path
 
 
 @dataclass(frozen=True)
@@ -176,48 +200,40 @@ def _cache_needs_refresh(
     return (now - fetched_at_epoch) > float(ttl_eff)
 
 
-def run_local(
+def _prepare_local_workspace(
     config_path: Path,
     *,
     namespace_filter: Sequence[str],
-    write: bool,
-    parallelism: int | None,
     refresh_discovery: bool,
-    strategy: SyncStrategy,
     changes_only_cli: bool,
     client_factory: Callable[[str, dict[str, Any], str], GithubRemoteClient | GitlabRemoteClient]
     | None = None,
-) -> list[StatusRecord]:
+) -> tuple[list[StatusRecord], LocalWorkspaceContext | None]:
     """
-    Execute ``local plan`` / ``local sync``: discover namespaces, plan, mutate.
+    Load config, run namespace discovery, and resolve workspace targets.
 
-    ``client_factory`` is reserved for dependency injection during tests (remote
-    name, remote YAML mapping, resolved token → client).
+    Returns prelude status lines and a context object, or ``None`` when discovery
+    cannot proceed (missing config, validation errors).
     """
     records: list[StatusRecord] = []
     if not config_path.is_file():
         records.append(StatusRecord("ERROR", "config.file", f"not found: {config_path}"))
-        return records
+        return records, None
 
     try:
         raw = load_yaml(config_path)
         merged = apply_defaults(raw)
     except Exception as e:
         records.append(StatusRecord("ERROR", "config.load", str(e)))
-        return records
+        return records, None
 
     vrec = validate(merged)
     if any(r.level == "ERROR" for r in vrec):
         records.extend(vrec)
-        return records
+        return records, None
 
     settings_any = merged.get("settings") or {}
     settings = settings_any if isinstance(settings_any, dict) else {}
-
-    parallelism_n = (
-        parallelism if parallelism is not None else int(settings.get("parallelism") or 4)
-    )
-    parallelism_n = max(1, parallelism_n)
 
     dsc_ttl = settings.get("discovery_cache_ttl")
     ttl_hint = dsc_ttl if isinstance(dsc_ttl, int) else None
@@ -232,6 +248,7 @@ def run_local(
     records.append(StatusRecord("OK", "cache_root", str(cache_root)))
 
     changes_only_mode = _truthy_changes_only(settings, changes_only_cli)
+    parallelism_default = max(1, int(settings.get("parallelism") or 4))
 
     remotes = merged.get("remotes") if isinstance(merged.get("remotes"), dict) else {}
     namespaces_raw = merged.get("namespaces")
@@ -407,10 +424,179 @@ def run_local(
                 continue
             targets[mapped.subject] = mapped
 
-    repos_sorted = sorted(targets.values(), key=lambda z: z.subject.lower())
+    repos_sorted = tuple(sorted(targets.values(), key=lambda z: z.subject.lower()))
     if not repos_sorted:
         records.append(StatusRecord("OK", "local.targets", "no repositories matched configuration"))
-        return [r for r in records if r.level != "OK"] if changes_only_mode else records
+
+    ctx = LocalWorkspaceContext(
+        workspace_root=ws_root,
+        cache_root=cache_root,
+        targets=repos_sorted,
+        remotes=remotes,
+        credentials_path=cred_path,
+        changes_only_mode=changes_only_mode,
+        parallelism_default=parallelism_default,
+    )
+    return records, ctx
+
+
+def run_local_status(
+    config_path: Path,
+    *,
+    namespace_filter: Sequence[str],
+    parallelism: int | None,
+    refresh_discovery: bool,
+    changes_only_cli: bool,
+    client_factory: Callable[[str, dict[str, Any], str], GithubRemoteClient | GitlabRemoteClient]
+    | None = None,
+) -> LocalStatusResult:
+    """
+    Read-only workspace report: ahead/behind, dirty, clone presence per configured repo.
+
+    Does not fetch, clone, or merge.
+    """
+    prelude_list, ctx = _prepare_local_workspace(
+        config_path,
+        namespace_filter=namespace_filter,
+        refresh_discovery=refresh_discovery,
+        changes_only_cli=changes_only_cli,
+        client_factory=client_factory,
+    )
+    prelude = tuple(prelude_list)
+    if ctx is None:
+        return LocalStatusResult(
+            prelude=prelude,
+            repo_lines=(),
+            snapshots=(),
+            workspace_root=Path("."),
+        )
+
+    if not ctx.targets:
+        if ctx.changes_only_mode:
+            filtered = [r for r in prelude if r.level != "OK"]
+        else:
+            filtered = list(prelude)
+        return LocalStatusResult(
+            prelude=tuple(filtered),
+            repo_lines=(),
+            snapshots=(),
+            workspace_root=ctx.workspace_root,
+        )
+
+    parallelism_n = parallelism if parallelism is not None else ctx.parallelism_default
+
+    def process_one(repo: WorkspaceRepo) -> tuple[RepoStatusSnapshot, tuple[StatusRecord, ...]]:
+        repo_dir = ctx.workspace_root.joinpath(*Path(repo.relative_posix).parts)
+        facts = probe_worktree(repo_dir)
+        snap, lines = summarize_local_repo_status(
+            subject=repo.subject,
+            relative_path=repo.relative_posix,
+            facts=facts,
+            expected_ssh_url=repo.ssh_clone,
+            expected_https_url=repo.https_clone,
+        )
+        return snap, lines
+
+    snapshots_ordered: list[RepoStatusSnapshot] = []
+    lines_ordered: list[StatusRecord] = []
+
+    if parallelism_n <= 1:
+        for ent in ctx.targets:
+            snap, lines = process_one(ent)
+            snapshots_ordered.append(snap)
+            lines_ordered.extend(lines)
+    else:
+        snap_by_subject: dict[str, RepoStatusSnapshot] = {}
+        lines_by_subject: dict[str, tuple[StatusRecord, ...]] = {}
+        with ThreadPoolExecutor(max_workers=parallelism_n) as executor:
+            future_map = {executor.submit(process_one, r): r for r in ctx.targets}
+            for fut in as_completed(future_map):
+                repo_ent = future_map[fut]
+                try:
+                    snap, lines = fut.result()
+                except Exception as exc:  # pragma: no cover - defensive
+                    snap_by_subject[repo_ent.subject] = RepoStatusSnapshot(
+                        subject=repo_ent.subject,
+                        relative_path=repo_ent.relative_posix,
+                        level="ERROR",
+                        detail=str(exc),
+                        branch="",
+                        upstream=None,
+                        ahead=0,
+                        behind=0,
+                        dirty=False,
+                        detached=False,
+                        path_missing=False,
+                        not_git_directory=False,
+                        submodule_dotfile=False,
+                        origin_url=None,
+                        origin_drift=False,
+                        last_fetch_epoch=None,
+                    )
+                    lines_by_subject[repo_ent.subject] = (
+                        StatusRecord("ERROR", repo_ent.subject, str(exc)),
+                    )
+                else:
+                    snap_by_subject[repo_ent.subject] = snap
+                    lines_by_subject[repo_ent.subject] = lines
+
+        for ent in ctx.targets:
+            snapshots_ordered.append(snap_by_subject[ent.subject])
+            lines_ordered.extend(lines_by_subject.get(ent.subject, ()))
+
+    repo_lines = tuple(lines_ordered)
+    if ctx.changes_only_mode:
+        prelude_out = tuple(r for r in prelude if r.level != "OK")
+        repo_lines = tuple(r for r in repo_lines if r.level != "OK")
+    else:
+        prelude_out = prelude
+
+    return LocalStatusResult(
+        prelude=prelude_out,
+        repo_lines=repo_lines,
+        snapshots=tuple(snapshots_ordered),
+        workspace_root=ctx.workspace_root,
+    )
+
+
+def run_local(
+    config_path: Path,
+    *,
+    namespace_filter: Sequence[str],
+    write: bool,
+    parallelism: int | None,
+    refresh_discovery: bool,
+    strategy: SyncStrategy,
+    changes_only_cli: bool,
+    client_factory: Callable[[str, dict[str, Any], str], GithubRemoteClient | GitlabRemoteClient]
+    | None = None,
+) -> list[StatusRecord]:
+    """
+    Execute ``local plan`` / ``local sync``: discover namespaces, plan, mutate.
+
+    ``client_factory`` is reserved for dependency injection during tests (remote
+    name, remote YAML mapping, resolved token → client).
+    """
+    prelude, ctx = _prepare_local_workspace(
+        config_path,
+        namespace_filter=namespace_filter,
+        refresh_discovery=refresh_discovery,
+        changes_only_cli=changes_only_cli,
+        client_factory=client_factory,
+    )
+    records: list[StatusRecord] = list(prelude)
+    if ctx is None:
+        return records
+
+    if not ctx.targets:
+        return [r for r in records if r.level != "OK"] if ctx.changes_only_mode else records
+
+    parallelism_n = parallelism if parallelism is not None else ctx.parallelism_default
+
+    ws_root = ctx.workspace_root
+    remotes = ctx.remotes
+    cred_path = ctx.credentials_path
+    repos_sorted = list(ctx.targets)
 
     def resolve_clone_url(repo: WorkspaceRepo) -> str:
         rc_any_inner = remotes.get(repo.remote_name)
@@ -528,6 +714,6 @@ def run_local(
             merged_rows_ordered.extend(batch_lists.get(ent.subject, []))
         records.extend(merged_rows_ordered)
 
-    if changes_only_mode:
+    if ctx.changes_only_mode:
         return [rec for rec in records if rec.level != "OK"]
     return records

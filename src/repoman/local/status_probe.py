@@ -23,6 +23,7 @@ class RepoWorktreeFacts:
     ahead: int
     behind: int
     origin_url: str | None
+    last_fetch_epoch: float | None
 
 
 def probe_worktree(repo_path: Path) -> RepoWorktreeFacts:
@@ -45,6 +46,7 @@ def probe_worktree(repo_path: Path) -> RepoWorktreeFacts:
             ahead=0,
             behind=0,
             origin_url=None,
+            last_fetch_epoch=None,
         )
 
     code, _, _ = run_git(repo_path, "rev-parse", "--is-inside-work-tree")
@@ -61,6 +63,7 @@ def probe_worktree(repo_path: Path) -> RepoWorktreeFacts:
             ahead=0,
             behind=0,
             origin_url=None,
+            last_fetch_epoch=None,
         )
 
     submodule_dotfile = (repo_path / ".gitmodules").is_file()
@@ -115,4 +118,19 @@ def probe_worktree(repo_path: Path) -> RepoWorktreeFacts:
         ahead=ahead,
         behind=behind,
         origin_url=origin_url,
+        last_fetch_epoch=_last_fetch_epoch(repo_path),
     )
+
+
+def _last_fetch_epoch(repo_path: Path) -> float | None:
+    """Return mtime of ``FETCH_HEAD`` when present (proxy for last fetch)."""
+    code, git_path_out, _ = run_git(repo_path, "rev-parse", "--git-path", "FETCH_HEAD")
+    if code != 0 or not git_path_out.strip():
+        return None
+    fetch_head = Path(git_path_out.strip())
+    if not fetch_head.is_absolute():
+        fetch_head = repo_path / fetch_head
+    try:
+        return fetch_head.stat().st_mtime
+    except OSError:
+        return None

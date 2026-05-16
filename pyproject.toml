@@ -1,6 +1,6 @@
 [project]
 name = "repoman"
-version = "0.2.0"
+version = "0.3.0"
 description = "Declarative multi-forge Git workspace sync and mirror management"
 authors = [
     { name = "Fabian Müller", email = "fabianmueller100295@gmail.com" }
