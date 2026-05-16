@@ -36,12 +36,20 @@ class GithubRemoteClient:
 
         Caller applies include/exclude/visibility filtering.
         """
+        ns = namespace.strip()
         try:
-            org = self._g.get_organization(namespace)
+            org = self._g.get_organization(ns)
             repo_iter = org.get_repos(type="all")
         except UnknownObjectException:
-            user = self._g.get_user(namespace)
-            repo_iter = user.get_repos(type="owner")
+            # Own login: use AuthenticatedUser + GET /user/repos so private owner repos
+            # are included (NamedUser + GET /users/{login}/repos is public-only without
+            # full ``repo`` scope and is the wrong surface for workspace sync).
+            auth = self._g.get_user()
+            if auth.login == ns:
+                repo_iter = auth.get_repos(affiliation="owner")
+            else:
+                user = self._g.get_user(ns)
+                repo_iter = user.get_repos(type="owner")
         except GithubException:
             raise
         out: list[ListedProject] = []
