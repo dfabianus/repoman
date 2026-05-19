@@ -10,10 +10,17 @@ import yaml
 
 from repoman import __version__
 from repoman.config import apply_defaults, load_yaml, validate
+from repoman.config_setup import (
+    coerce_config_value,
+    init_config_file,
+    load_config_for_edit,
+    plan_config_set,
+    write_config_file,
+)
 from repoman.doctor.runner import run_doctor
 from repoman.local.runner import SyncStrategy, run_local, run_local_status
 from repoman.local.status_report import status_payload_to_json_dict
-from repoman.paths import default_config_path
+from repoman.paths import credentials_path_for_config, default_config_path
 from repoman.status import StatusRecord, exit_code_for_records, format_line
 
 
@@ -29,7 +36,7 @@ def main() -> None:
 
 @main.group("config")
 def config_cmd() -> None:
-    """Inspect and validate repoman.yaml."""
+    """Create, inspect, and update repoman.yaml."""
 
 
 @config_cmd.command("path")
@@ -66,6 +73,93 @@ def config_validate_cmd(config: Path | None) -> None:
     for r in records:
         click.echo(format_line(r))
     raise SystemExit(exit_code_for_records(records))
+
+
+@config_cmd.command("init")
+@click.option(
+    "--config",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Destination repoman.yaml (default: platform default).",
+)
+@click.option(
+    "--force",
+    is_flag=True,
+    help="Overwrite an existing configuration file.",
+)
+def config_init_cmd(config: Path | None, force: bool) -> None:
+    """Create repoman.yaml from the bundled template at the default (or given) path."""
+    path = _config_path(config)
+    records = init_config_file(path, force=force)
+    for r in records:
+        click.echo(format_line(r))
+    if not any(r.level == "ERROR" for r in records):
+        cred = credentials_path_for_config(path)
+        click.echo("")
+        click.echo("Next steps:")
+        click.echo(f"  1. Edit {path}")
+        click.echo(
+            f"  2. Optional: create {cred} for token_credentials (see docs/getting-started.md)",
+        )
+        click.echo("  3. uv run repoman config validate")
+        click.echo("  4. uv run repoman doctor")
+    raise SystemExit(exit_code_for_records(records))
+
+
+@config_cmd.command("set")
+@click.argument("key", metavar="KEY")
+@click.argument("value", required=False, metavar="VALUE")
+@click.option("--unset", is_flag=True, help="Remove KEY instead of setting a value.")
+@click.option(
+    "--write",
+    is_flag=True,
+    help="Apply the change (default is preview-only).",
+)
+@click.option("--config", type=click.Path(path_type=Path), default=None)
+def config_set_cmd(
+    key: str,
+    value: str | None,
+    unset: bool,
+    write: bool,
+    config: Path | None,
+) -> None:
+    """Set or remove a dotted config key (preview unless --write)."""
+    path = _config_path(config)
+    if not path.is_file():
+        click.echo(
+            format_line(StatusRecord("ERROR", "config.file", f"not found: {path}")),
+            err=True,
+        )
+        raise SystemExit(2)
+    if unset and value is not None:
+        click.echo(
+            format_line(
+                StatusRecord("ERROR", "config.set", "pass VALUE only without --unset"),
+            ),
+            err=True,
+        )
+        raise SystemExit(2)
+    if not unset and value is None:
+        click.echo(
+            format_line(StatusRecord("ERROR", "config.set", "VALUE required unless --unset")),
+            err=True,
+        )
+        raise SystemExit(2)
+
+    try:
+        raw = load_config_for_edit(path)
+    except Exception as e:
+        click.echo(format_line(StatusRecord("ERROR", "config.load", str(e))), err=True)
+        raise SystemExit(2) from None
+
+    parsed_value = None if unset else coerce_config_value(value or "")
+    new_data, record = plan_config_set(raw, key, parsed_value, unset=unset)
+    if write and record.level != "ERROR":
+        write_config_file(path, new_data)
+        record = StatusRecord("UPDATED", record.subject, record.detail)
+    for r in [record]:
+        click.echo(format_line(r))
+    raise SystemExit(exit_code_for_records([record]))
 
 
 @config_cmd.command("show")

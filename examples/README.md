@@ -9,6 +9,9 @@ Prerequisites:
 - Repository clone with `uv sync --all-groups`
 - Commands run from repository root unless a subfolder README says otherwise
 
+For a real machine setup, start with **[`docs/getting-started.md`](../docs/getting-started.md)**
+(`repoman config init`, tokens, `local plan` / `local sync --write`).
+
 See subfolders:
 
 - [`local-plan/`](local-plan/) — smoke `repoman config validate`, `doctor`, `local plan`/`sync`

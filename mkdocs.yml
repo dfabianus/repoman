@@ -1,0 +1,54 @@
+site_name: repoman
+site_description: Declarative multi-forge Git workspace sync and mirror tooling
+repo_url: https://github.com/dfabianus/repoman
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.expand
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Commands:
+      - Overview: commands/index.md
+      - config: commands/config.md
+      - doctor: commands/doctor.md
+      - local: commands/local.md
+      - mirrors (planned): commands/mirrors.md
+  - Design specification: design/repoman.md
+  - Examples: examples.md
+  - Deployment: deployment/ci-cd.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true

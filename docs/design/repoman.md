@@ -379,9 +379,11 @@ token = "ghp_..."
 repoman --version
 repoman --help
 
+repoman config init     [--config PATH] [--force]          # Template → Zieldatei
 repoman config validate [--config PATH]
 repoman config show     [--config PATH] [--resolved]      # mit Defaults aufgelöst
 repoman config path                                       # gibt aktiven Config-Pfad aus
+repoman config set KEY VALUE [--write] [--unset]          # dotted keys; Preview ohne --write
 
 repoman doctor [--skip-network] [--config PATH]
 
@@ -401,9 +403,9 @@ repoman mirrors list   [--json]
 repoman mirrors lock   [--write]                # schreibt repoman.lock
                        # erfasst aktuellen Server-Zustand aller Mirrors
 ```
-**Offene Produktfrage:** Brauchen wir einen `repoman config setup` Befehl, um z. B. aus einem Template
-eine erste Konfiguration zu erzeugen? Abhängig davon, welche weiteren Dateien neben `repoman.yaml`
-im Konfigurationsverzeichnis liegen sollen.
+**Onboarding:** `repoman config init` erzeugt `repoman.yaml` aus dem Bundled-Template;
+`repoman config set` ändert dotted Keys (Preview ohne `--write`). Ein interaktiver Setup-Wizard
+ist für eine spätere Phase vorgesehen (siehe `.adr.md`).
 
 Bewusst **nicht** im MVP:
 

@@ -32,6 +32,5 @@ jobs:
       - name: Pytest
         run: uv run pytest
 
-      # When mkdocs.yml exists, uncomment and keep in sync with AGENTS.md:
-      # - name: MkDocs strict build
-      #   run: uv run mkdocs build --strict
+      - name: MkDocs strict build
+        run: uv run mkdocs build --strict

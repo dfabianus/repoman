@@ -1,4 +1,4 @@
-# Schema version 1 — see docs/design/repoman.md
+# Schema version 1 — see docs/getting-started.md and docs/design/repoman.md
 version: 1
 
 settings:
@@ -8,6 +8,7 @@ settings:
   changes_only: false
 
 paths:
+  # ~ expands to your home directory on Linux, macOS, and Windows.
   workspace_root: "~/repositories"
   cache_root: "~/.cache/repoman"
   state_root: "~/.local/state/repoman"
@@ -24,7 +25,16 @@ remotes:
     kind: github
     base_url: "https://api.github.com"
     token_env: "REPOMAN_GITHUB_TOKEN"
+    # Or use credentials.toml beside repoman.yaml:
+    # token_credentials: "github"
     clone_protocol: "ssh"
+
+# Track all repos in a namespace (uncomment and edit):
+# namespaces:
+#   - remote: github
+#     name: "<your-github-username-or-org>"
+#     visibility: [public, private]
+#     include: ["**/*"]
 
 namespaces: []
 

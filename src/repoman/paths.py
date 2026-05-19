@@ -11,13 +11,13 @@ _PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
 
 
 def default_config_dir() -> Path:
-    """Config directory: REPOMAN_HOME, or OS default per design doc."""
-    if os.name == "nt":
-        profile = os.environ.get("USERPROFILE", "")
-        return Path(profile).expanduser() / ".repoman"
+    """Config directory: REPOMAN_HOME if set, else OS default per design doc."""
     repoman_home = os.environ.get("REPOMAN_HOME")
     if repoman_home:
         return Path(repoman_home).expanduser()
+    if os.name == "nt":
+        profile = os.environ.get("USERPROFILE", "")
+        return Path(profile).expanduser() / ".repoman"
     return Path("~/.config/repoman").expanduser()
 
 

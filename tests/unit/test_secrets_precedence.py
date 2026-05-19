@@ -44,6 +44,7 @@ def test_credentials_toml_when_env_missing(tmp_path: Path) -> None:
     assert src == "credentials.toml:gitlab"
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX 0600 enforcement is skipped on Windows")
 def test_credentials_wrong_mode_raises(tmp_path: Path) -> None:
     cred = tmp_path / "credentials.toml"
     cred.write_text('[gitlab]\ntoken = "x"\n', encoding="utf-8")
