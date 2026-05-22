@@ -1,0 +1,2674 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Declarative multi-forge Git workspace sync and mirror tooling">
+      
+      
+      
+      
+        <link rel="prev" href="../../commands/mirrors/">
+      
+      
+        <link rel="next" href="../../examples/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>repoman design specification - repoman</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#projekt-design-repoman" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="repoman" class="md-header__button md-logo" aria-label="repoman" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            repoman
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              repoman design specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dfabianus/repoman" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="repoman" class="md-nav__button md-logo" aria-label="repoman" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    repoman
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dfabianus/repoman" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Commands
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/doctor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    doctor
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    local
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/mirrors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    mirrors (planned)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design specification
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--active"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design specification
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--active"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-mission-und-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Mission und Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Mission und Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-mission-ein-satz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Mission (ein Satz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-was-repoman-macht-in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Was repoman macht (in scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-was-repoman-nicht-macht-out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Was repoman nicht macht (out of scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-primary-use-case-default-verhalten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Primary Use Case (Default-Verhalten)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-verwandte-tools-und-abgrenzung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Verwandte Tools und Abgrenzung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-technologie-entscheidungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Technologie-Entscheidungen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Technologie-Entscheidungen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-sprache-python-313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Sprache: Python 3.13+
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-toolchain-verbindlich" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Toolchain (verbindlich)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-designprinzipien-ubernommen-aus-bewahrten-python-cli-mustern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Designprinzipien (übernommen aus bewährten Python-CLI-Mustern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architektur-und-repo-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architektur und Repo-Layout
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Architektur und Repo-Layout">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-schichten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Schichten
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-konfiguration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Konfiguration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Konfiguration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-schema-schemaversion-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Schema (Schemaversion 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-mehrere-config-dateien-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Mehrere Config-Dateien (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-schema-validierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Schema-Validierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-secrets-token-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Secrets / Token-Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Secrets / Token-Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-verwendung-von-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Verwendung von Tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-secret-doctor-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Secret-Doctor-Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-command-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Command-Surface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Command-Surface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-status-vokabular-und-exit-codes-verbindlich" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Status-Vokabular und Exit-Codes (verbindlich)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-beispiel-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Beispiel-Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-feature-detail-local-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Feature-Detail: local sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Feature-Detail: local sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-algorithmus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Algorithmus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-konflikt-politik-kompromisslos-sicher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Konflikt-Politik (kompromisslos sicher)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-parallelitat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Parallelität
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-discovery-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Discovery-Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-feature-detail-mirrors-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Feature-Detail: mirrors sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Feature-Detail: mirrors sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-backend-gitlab_remote_mirror-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Backend: gitlab_remote_mirror (MVP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-lock-file-repomanlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Lock-File repoman.lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Audit-Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-backend-local_push-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Backend: local_push (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-backend-github_actions_mirror-optional-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 Backend: github_actions_mirror (Optional, Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-discovery-filter-include-exclude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Discovery-Filter (include / exclude)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-tests-und-qualitat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Tests und Qualität
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Tests und Qualität">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-test-pyramide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Test-Pyramide
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-lint-format-type-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Lint, Format, Type-Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-integration-mit-anderen-werkzeugen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Integration mit anderen Werkzeugen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-open-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Open Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-sicherheits-und-ip-hinweise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Sicherheits- und IP-Hinweise
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-konkrete-erste-schritte-phase-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Konkrete erste Schritte (Phase 0/1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-referenzen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Referenzen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-naechste-schritte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Naechste Schritte
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/ci-cd/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-mission-und-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Mission und Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Mission und Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-mission-ein-satz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Mission (ein Satz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-was-repoman-macht-in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Was repoman macht (in scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-was-repoman-nicht-macht-out-of-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Was repoman nicht macht (out of scope)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-primary-use-case-default-verhalten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Primary Use Case (Default-Verhalten)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-verwandte-tools-und-abgrenzung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Verwandte Tools und Abgrenzung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-technologie-entscheidungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Technologie-Entscheidungen
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Technologie-Entscheidungen">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-sprache-python-313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Sprache: Python 3.13+
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-toolchain-verbindlich" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Toolchain (verbindlich)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-designprinzipien-ubernommen-aus-bewahrten-python-cli-mustern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Designprinzipien (übernommen aus bewährten Python-CLI-Mustern)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-architektur-und-repo-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Architektur und Repo-Layout
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Architektur und Repo-Layout">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-schichten" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Schichten
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-konfiguration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Konfiguration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Konfiguration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-schema-schemaversion-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Schema (Schemaversion 1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-mehrere-config-dateien-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Mehrere Config-Dateien (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-schema-validierung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Schema-Validierung
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-secrets-token-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Secrets / Token-Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Secrets / Token-Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-verwendung-von-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Verwendung von Tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-secret-doctor-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Secret-Doctor-Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-command-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Command-Surface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Command-Surface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-status-vokabular-und-exit-codes-verbindlich" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Status-Vokabular und Exit-Codes (verbindlich)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-beispiel-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Beispiel-Output
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-feature-detail-local-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Feature-Detail: local sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Feature-Detail: local sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-algorithmus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Algorithmus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-konflikt-politik-kompromisslos-sicher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Konflikt-Politik (kompromisslos sicher)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-parallelitat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Parallelität
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-discovery-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Discovery-Cache
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-feature-detail-mirrors-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Feature-Detail: mirrors sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Feature-Detail: mirrors sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-backend-gitlab_remote_mirror-mvp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Backend: gitlab_remote_mirror (MVP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-lock-file-repomanlock" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Lock-File repoman.lock
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-audit-log" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Audit-Log
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-backend-local_push-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Backend: local_push (Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-backend-github_actions_mirror-optional-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 Backend: github_actions_mirror (Optional, Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-discovery-filter-include-exclude" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Discovery-Filter (include / exclude)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-tests-und-qualitat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Tests und Qualität
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Tests und Qualität">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-test-pyramide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Test-Pyramide
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-lint-format-type-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Lint, Format, Type-Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 CI
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Roadmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-integration-mit-anderen-werkzeugen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Integration mit anderen Werkzeugen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-open-design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Open Design Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-sicherheits-und-ip-hinweise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Sicherheits- und IP-Hinweise
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-konkrete-erste-schritte-phase-01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Konkrete erste Schritte (Phase 0/1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-referenzen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Referenzen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-naechste-schritte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Naechste Schritte
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="projekt-design-repoman">Projekt-Design: <code>repoman</code><a class="headerlink" href="#projekt-design-repoman" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Status:</strong> MVP Phase 0–2 (Kern): <code>config</code>, <code>doctor</code>, <code>local plan</code> / <code>local sync</code>; <code>local status</code> und <code>mirrors</code> folgen laut Roadmap.
+<strong>Kontext:</strong> <code>repoman</code> ist ein <strong>eigenständiges, plattformneutrales</strong> CLI-Werkzeug für Forge-Discovery,
+lokale Workspaces und Mirror-Konfiguration. Es kann neben anderen Automatisierungs- oder
+Dokumentations-Tools eingesetzt werden; getrennte Projekte behalten jeweils eigene Konfiguration.</p>
+</blockquote>
+<h2 id="1-mission-und-scope">1. Mission und Scope<a class="headerlink" href="#1-mission-und-scope" title="Permanent link">&para;</a></h2>
+<h3 id="11-mission-ein-satz">1.1 Mission (ein Satz)<a class="headerlink" href="#11-mission-ein-satz" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><code>repoman</code> hält eine YAML-deklarierte Menge an Git-Repositories über mehrere
+Forges hinweg lokal aktuell und konfiguriert deren Mirror-Beziehungen
+idempotent — preview-first, ohne lokale Änderungen zu zerstören.</p>
+</blockquote>
+<h3 id="12-was-repoman-macht-in-scope">1.2 Was <code>repoman</code> macht (in scope)<a class="headerlink" href="#12-was-repoman-macht-in-scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Lokale Synchronisation</strong>: Repositories aus konfigurierten Namespaces (GitLab
+  Groups, GitHub Users/Orgs) klonen oder aktualisieren, in einem deterministischen
+  Layout unter einem <code>workspace_root</code>.</li>
+<li><strong>Mirror-Verwaltung</strong>: Server-seitige Push-/Pull-Mirrors (primär in GitLab via
+  Remote-Mirror-API) deklarativ aus der YAML heraus konfigurieren — die Config
+  ist die SSOT für „wer spiegelt wohin“.</li>
+<li><strong>Discovery</strong>: Namespaces auf der Remote-Seite scannen (alle Repos in einer
+  Group/Org) und mit Include-/Exclude-Filtern an einen lokalen Baum anbinden.</li>
+<li><strong>Diagnose</strong>: Read-only Konsistenz-Checks (<code>doctor</code>).</li>
+</ul>
+<h3 id="13-was-repoman-nicht-macht-out-of-scope">1.3 Was <code>repoman</code> <strong>nicht</strong> macht (out of scope)<a class="headerlink" href="#13-was-repoman-nicht-macht-out-of-scope" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Keine Repo-CRUD-Operationen auf Remote-Seite (kein Create/Delete/Archive — das
+  bleibt <code>gh</code>/<code>glab</code>/Web-UI).</li>
+<li>Keine Issue-/MR-/PR-Spiegel (eigenständige „Cockpit“- oder Ticket-Spiegel-Tools).</li>
+<li>Keine eingebaute Markdown-/Wiki-Renderer-Schicht — <code>repoman</code> kann später <strong>strukturierte Daten</strong> (JSON-Status)
+  exportieren, die andere Tools rendern; keine eigene Renderer-Schicht.</li>
+<li>Kein anbieterspezifisches Cloud-Sync- oder Laufwerks-Setup (bleibt außerhalb des Scopes).</li>
+<li>Keine Frontmatter-/Notiz-Normalisierung (bleibt außerhalb des Scopes).</li>
+<li>Kein Secret-Storage als Feature — <code>repoman</code> <strong>liest</strong> nur Tokens (siehe §6).</li>
+<li>Kein bidirektionaler Mirror — ausdrücklich nur einseitige Datenflüsse pro
+  Mirror-Eintrag.</li>
+</ul>
+<h3 id="14-primary-use-case-default-verhalten">1.4 Primary Use Case (Default-Verhalten)<a class="headerlink" href="#14-primary-use-case-default-verhalten" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><em>„Tracke per Default </em><em>alle</em><em> Repositories in einem Namespace; erlaube
+Include/Exclude für Sonderfälle.“</em></p>
+</blockquote>
+<p>Konkret: ein YAML-Eintrag <code>namespaces: [{ remote: gitlab, name: acme-org, include_subgroups: true }]</code>
+genügt, um die ganze Gruppe in <code>~/repositories/gitlab/acme-org/&lt;repo&gt;</code> zu halten.
+Filter werden additiv darauf gelegt (<code>include</code>, <code>exclude</code> mit Glob-Pattern).</p>
+<h2 id="2-verwandte-tools-und-abgrenzung">2. Verwandte Tools und Abgrenzung<a class="headerlink" href="#2-verwandte-tools-und-abgrenzung" title="Permanent link">&para;</a></h2>
+<p>Vor der Implementierung wurde der Markt gesichtet. Wichtigste Findings:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Modell</th>
+<th>Was es löst</th>
+<th>Warum es <strong>nicht</strong> reicht</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tsrc</code> (Python)</td>
+<td>Manifest in einem Repo, Gruppen, parallel</td>
+<td>Multi-Repo-Sync GitLab-zentrisch</td>
+<td>Manifest sitzt im Mono-Repo; kein Mirror-Feature</td>
+</tr>
+<tr>
+<td><code>vcstool</code> (Python)</td>
+<td>YAML-Import-Liste</td>
+<td>Klon-/Pull-Klassiker (ROS)</td>
+<td>Kein Namespace-Scan, kein Mirror</td>
+</tr>
+<tr>
+<td><code>ghorg</code> (Go)</td>
+<td>Org/Group-Discovery, klont alles</td>
+<td>Genau das Discovery-Pattern</td>
+<td>Kein Mirror, kein State-/Lock-Konzept</td>
+</tr>
+<tr>
+<td><code>gickup</code> (Go)</td>
+<td>YAML-Backup zwischen Forges</td>
+<td>Genau das Mirror-Pattern</td>
+<td>Tut nur Mirror (clientseitig), kein Workspace</td>
+</tr>
+<tr>
+<td><code>gita</code> (Python)</td>
+<td>Lokale Repo-Registry, Status-Cockpit</td>
+<td>Hübsche Übersicht</td>
+<td>Klont nichts, kein Mirror</td>
+</tr>
+<tr>
+<td><code>Google repo</code>, <code>west</code></td>
+<td>XML-/YAML-Manifest</td>
+<td>Monorepo-Workspaces (AOSP, Zephyr)</td>
+<td>Branch-Modell zu opinionated</td>
+</tr>
+<tr>
+<td><code>mr</code> (Perl)</td>
+<td><code>.mrconfig</code>-Liste</td>
+<td>Klassiker, dünn</td>
+<td>Keine Forge-Awareness</td>
+</tr>
+<tr>
+<td><code>python-gitlab</code>, <code>PyGithub</code></td>
+<td>API-Libraries</td>
+<td>Bausteine</td>
+<td>Keine End-User-CLI</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Folgerung:</strong> <code>repoman</code> = <code>tsrc</code>-artiges Manifest + <code>ghorg</code>-artige Discovery +
+<code>gickup</code>-artiges Mirror-Modell + <code>gita</code>-artiger Status — aber als <strong>eine</strong> CLI mit
+einheitlichem Status-Vokabular, einer YAML als SSOT und einem ausdrücklichen
+Preview-First-Anspruch.</p>
+<p>Beide Vorbild-Tools (<code>ghorg</code>, <code>gickup</code>) sind in <strong>Go</strong>. <code>repoman</code> wird
+trotzdem in <strong>Python</strong> implementiert (siehe §3); optional können in Phase 2 einzelne dieser Tools
+als alternative Backends angebunden werden.</p>
+<h2 id="3-technologie-entscheidungen">3. Technologie-Entscheidungen<a class="headerlink" href="#3-technologie-entscheidungen" title="Permanent link">&para;</a></h2>
+<h3 id="31-sprache-python-313">3.1 Sprache: Python 3.13+<a class="headerlink" href="#31-sprache-python-313" title="Permanent link">&para;</a></h3>
+<p>Begründet, weil:</p>
+<ul>
+<li>Ein Python-CLI-Ökosystem profitiert von identischen Idiomen für Tests, Linting und
+  Dokumentation — kein Kontextwechsel.</li>
+<li><code>python-gitlab</code> ist die reichhaltigste, typgepflegteste GitLab-Library und
+  hat <strong>direkte Unterstützung für <code>project.remote_mirrors</code></strong> — genau der
+  Mirror-Kern.</li>
+<li><code>PyGithub</code> bzw. <code>gh</code> als Subprozess decken die GitHub-Seite ab.</li>
+<li>Parallelität für I/O-bound Operationen erledigt
+  <code>concurrent.futures.ThreadPoolExecutor</code> ohne Komplexität.</li>
+<li>Distribution: <code>uv tool install repoman</code> reicht. Falls später ein Single-Binary
+  gewünscht ist, lässt sich <code>repoman</code> mit <code>pex</code>/<code>shiv</code> packen.</li>
+</ul>
+<p>Bewusst <strong>kein</strong> Bash: Skripte sind nicht Windows-tauglich, testarm und passen
+nicht zu Preview-First / Idempotenz-Disziplin. Alle Git-Aufrufe sind
+<code>subprocess</code>-Wrapper mit strukturierter Rückgabe.</p>
+<h3 id="32-toolchain-verbindlich">3.2 Toolchain (verbindlich)<a class="headerlink" href="#32-toolchain-verbindlich" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Bereich</th>
+<th>Werkzeug</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Paket-/Env-Manager</td>
+<td><strong>uv</strong> (siehe <code>AGENTS.md</code>)</td>
+</tr>
+<tr>
+<td>CLI-Framework</td>
+<td><code>click</code></td>
+</tr>
+<tr>
+<td>Konfig-Format</td>
+<td>YAML (<code>pyyaml</code>)</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td><code>httpx</code> (für direkte API-Calls, falls Lib fehlt)</td>
+</tr>
+<tr>
+<td>GitLab-API</td>
+<td><code>python-gitlab</code></td>
+</tr>
+<tr>
+<td>GitHub-API</td>
+<td><code>PyGithub</code> (oder <code>gh</code> als Subprozess)</td>
+</tr>
+<tr>
+<td>Git-Operationen</td>
+<td><code>subprocess</code> gegen System-<code>git</code></td>
+</tr>
+<tr>
+<td>TOML-Lesen</td>
+<td><code>tomllib</code> (stdlib)</td>
+</tr>
+<tr>
+<td>Linter/Formatter</td>
+<td><code>ruff</code></td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>pytest</code>, <code>click.testing.CliRunner</code>, <code>tmp_path</code></td>
+</tr>
+<tr>
+<td>Doku</td>
+<td><code>mkdocs-material</code> mit <code>mkdocstrings</code></td>
+</tr>
+</tbody>
+</table>
+<p>Dependencies werden <strong>ausschließlich</strong> über <code>uv add</code> gepflegt — <code>pyproject.toml</code>
+<code>[dependencies]</code>-Sektion ist nicht manuell zu editieren (wie in <code>AGENTS.md</code> beschrieben).</p>
+<h3 id="33-designprinzipien-ubernommen-aus-bewahrten-python-cli-mustern">3.3 Designprinzipien (übernommen aus bewährten Python-CLI-Mustern)<a class="headerlink" href="#33-designprinzipien-ubernommen-aus-bewahrten-python-cli-mustern" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Prinzip</th>
+<th>Konkret bei <code>repoman</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Filesystem-first</strong></td>
+<td>Direkter Lese-/Schreibzugriff auf <code>~/repositories</code>; kein Daemon.</td>
+</tr>
+<tr>
+<td><strong>Preview-first</strong></td>
+<td>Default <code>--dry-run</code>; persistente Aktionen brauchen <code>--write</code>.</td>
+</tr>
+<tr>
+<td><strong>Idempotent</strong></td>
+<td>Wiederholter Lauf erzeugt keinen Drift; Skip wenn Zustand passt.</td>
+</tr>
+<tr>
+<td><strong>Statusvokabular</strong></td>
+<td><code>OK</code> · <code>WOULD UPDATE</code> · <code>UPDATED</code> · <code>SKIP</code> · <code>ERROR</code> · <code>WARN</code></td>
+</tr>
+<tr>
+<td><strong>Pure logic vs. I/O</strong></td>
+<td><code>planner.py</code> rein, <code>runner.py</code>/<code>api.py</code> I/O.</td>
+</tr>
+<tr>
+<td><strong>Modular</strong></td>
+<td>Ein Subkommando ⇒ ein Subpackage.</td>
+</tr>
+<tr>
+<td><strong>Plattformneutral</strong></td>
+<td>Linux, macOS, Windows; keine OneDrive-/<code>M:\</code>-Annahmen.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-architektur-und-repo-layout">4. Architektur und Repo-Layout<a class="headerlink" href="#4-architektur-und-repo-layout" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>repoman/
+  pyproject.toml             # uv-managed
+  uv.lock
+  README.md
+  AGENTS.md                  # Contributor- und Agenten-Richtlinien
+  .adr.md                    # Living backlog (Checkboxen)
+  src/repoman/
+    __init__.py
+    __main__.py
+    cli.py                   # click-Group: config, local, mirrors, doctor
+    config.py                # YAML-Loader + Schema-Validierung (pure)
+    paths.py                 # Layout-Templating {remote}/{namespace}/{repo}
+    status.py                # Status-Token + Format (pure)
+    secrets.py               # Token-Resolver (mehrstufige Quellen)
+    cache.py                 # Discovery-Cache (JSON, TTL)
+    local/
+      __init__.py
+      planner.py             # pure: Zielzustand pro Repo berechnen
+      runner.py              # I/O: clone / fetch / pull --ff-only
+      git_ops.py             # subprocess-Kapsel um git
+      status_probe.py        # pure: parse `git status` Output
+    remotes/
+      __init__.py
+      base.py                # ForgeClient Protocol
+      gitlab_client.py       # python-gitlab Wrapper
+      github_client.py       # PyGithub Wrapper
+      discovery.py           # pure: include/exclude filtern
+    mirrors/
+      __init__.py
+      planner.py             # pure: Diff Wunsch-/Server-Zustand
+      runner.py              # I/O: API-Calls oder local push
+      local_backend.py       # subprocess git clone --mirror + push --mirror
+      audit.py               # Audit-Log schreiben
+    doctor/
+      __init__.py
+      runner.py
+      checks.py              # Token, Namespace-Erreichbarkeit, Waisen-Klone
+    templates/
+      repoman.yaml.example
+  tests/
+    unit/
+      test_planner_local.py
+      test_planner_mirror.py
+      test_discovery_filter.py
+      test_paths_layout.py
+      test_secrets_precedence.py
+      test_config_validate.py
+    integration/
+      test_local_sync_against_bare_repos.py
+      test_mirrors_sync_with_mocked_gitlab.py
+      test_cli_smoke.py
+  docs/
+    index.md
+    getting-started.md
+    commands/
+      config.md
+      local.md
+      mirrors.md
+      doctor.md
+    design/
+      repoman.md             # Mirror dieses Designdokuments (entfeintert für Repo)
+      mirror-backends.md
+    deployment/
+      ci-cd.md
+</code></pre></div>
+<h3 id="41-schichten">4.1 Schichten<a class="headerlink" href="#41-schichten" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pure</strong> (<code>config.py</code>, <code>paths.py</code>, <code>status.py</code>, <code>*/planner.py</code>,
+  <code>remotes/discovery.py</code>, <code>local/status_probe.py</code>): keine I/O, voll
+  unit-testbar.</li>
+<li><strong>Runner / I/O</strong> (<code>*/runner.py</code>, <code>*/git_ops.py</code>, <code>remotes/*_client.py</code>):
+  führen Git, HTTP und API aus; per Integration-Tests mit <code>tmp_path</code> und
+  Bare-Repo-Fixtures gegen lokale Bare-Repos testbar.</li>
+<li><strong>CLI</strong> (<code>cli.py</code>): dünne Schicht, validiert Optionen, ruft Runner auf.</li>
+</ul>
+<h2 id="5-konfiguration">5. Konfiguration<a class="headerlink" href="#5-konfiguration" title="Permanent link">&para;</a></h2>
+<p>Die YAML lebt unter <code>${REPOMAN_HOME:-~/.config/repoman}/repoman.yaml</code> (POSIX)
+bzw. <code>%USERPROFILE%\.repoman\repoman.yaml</code> (Windows). <code>--config PATH</code> überschreibt
+das.</p>
+<h3 id="51-schema-schemaversion-1">5.1 Schema (Schemaversion 1)<a class="headerlink" href="#51-schema-schemaversion-1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="nt">settings</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">default_action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">preview</span><span class="w">          </span><span class="c1"># preview | write</span>
+<span class="w">  </span><span class="nt">log_level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span><span class="w">                  </span><span class="c1"># debug | info | warning | error</span>
+<span class="w">  </span><span class="nt">parallelism</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w">                   </span><span class="c1"># Worker für Git/HTTP</span>
+<span class="w">  </span><span class="nt">changes_only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">              </span><span class="c1"># nur != OK ausgeben</span>
+
+<span class="nt">paths</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">workspace_root</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;~/repositories&quot;</span><span class="w"> </span><span class="c1"># ~/repositories/&lt;remote&gt;/&lt;namespace&gt;/&lt;repo&gt;</span>
+<span class="w">  </span><span class="nt">cache_root</span><span class="p">:</span><span class="w">     </span><span class="s">&quot;~/.cache/repoman&quot;</span>
+<span class="w">  </span><span class="nt">state_root</span><span class="p">:</span><span class="w">     </span><span class="s">&quot;~/.local/state/repoman&quot;</span><span class="w">   </span><span class="c1"># Audit-Logs, Lock-File</span>
+
+<span class="c1"># Layout-Template, in dem Repos abgelegt werden.</span>
+<span class="c1"># Verfügbare Platzhalter: {remote} {namespace} {subgroup} {repo}</span>
+<span class="c1"># Default: {remote}/{namespace}/{repo} (Subgroups werden mit &#39;/&#39; eingebettet)</span>
+<span class="nt">layout</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{remote}/{namespace}/{repo}&quot;</span>
+
+<span class="nt">remotes</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">gitlab</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab</span>
+<span class="w">    </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gitlab.example.com&quot;</span>
+<span class="w">    </span><span class="nt">token_env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;REPOMAN_GITLAB_TOKEN&quot;</span>
+<span class="w">    </span><span class="c1"># alternativ:</span>
+<span class="w">    </span><span class="c1"># token_credentials: &quot;gitlab&quot;   # Sektion in credentials.toml</span>
+<span class="w">    </span><span class="c1"># token_keyring:    { service: repoman, account: gitlab }   # Phase 2</span>
+<span class="w">    </span><span class="nt">clone_protocol</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https&quot;</span><span class="w">        </span><span class="c1"># https | ssh</span>
+<span class="w">  </span><span class="nt">github</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github</span>
+<span class="w">    </span><span class="nt">base_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://api.github.com&quot;</span>
+<span class="w">    </span><span class="nt">token_env</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;REPOMAN_GITHUB_TOKEN&quot;</span>
+<span class="w">    </span><span class="nt">clone_protocol</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;ssh&quot;</span>
+
+<span class="c1"># Default-Use-Case: ganze Namespaces tracken.</span>
+<span class="nt">namespaces</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">remote</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;acme-org&quot;</span><span class="w">                 </span><span class="c1"># Group-Pfad in GitLab</span>
+<span class="w">    </span><span class="nt">include_subgroups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="c1"># optionale Filter, additiv:</span>
+<span class="w">    </span><span class="nt">include</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;**/*&quot;</span><span class="p p-Indicator">]</span><span class="w">              </span><span class="c1"># Glob gegen den vollen Pfad ohne Group-Prefix</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;archived/**&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;*.wiki&quot;</span>
+<span class="w">    </span><span class="c1"># Optional: Visibility-Filter (nur für GitHub-Orgs/Users sinnvoll)</span>
+<span class="w">    </span><span class="nt">visibility</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">public</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">private</span><span class="p p-Indicator">]</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">remote</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-user&quot;</span><span class="w">           </span><span class="c1"># GitHub user/org</span>
+<span class="w">    </span><span class="nt">visibility</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">public</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">private</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">include</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;**/*&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;**/*-archive&quot;</span><span class="p p-Indicator">]</span>
+
+<span class="c1"># Explizite Einzel-Repos (z. B. Drittprojekte, Forks ausserhalb der Namespaces)</span>
+<span class="nt">repos</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> remote</span><span class="p">:</span><span class="w"> </span><span class="nv">github</span><span class="p p-Indicator">,</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;third-party/upstream-tool&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">local</span><span class="p">:</span><span class="w">  </span><span class="s">&quot;third-party/upstream-tool&quot;</span><span class="w">          </span><span class="c1"># relativ zu workspace_root</span>
+<span class="w">    </span><span class="nt">pin_branch</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;main&quot;</span><span class="w">                            </span><span class="c1"># optional: nur diesen Branch tracken</span>
+
+<span class="c1"># Mirror-Beziehungen (orthogonal zu lokalem Klon)</span>
+<span class="nt">mirrors</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;widget-sync&quot;</span><span class="w">             </span><span class="c1"># stabiler Identifier, nicht generierter Slug</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> remote</span><span class="p">:</span><span class="w"> </span><span class="nv">gitlab</span><span class="p p-Indicator">,</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;acme-org/widget&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> remote</span><span class="p">:</span><span class="w"> </span><span class="nv">github</span><span class="p p-Indicator">,</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;example-user/widget&quot;</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">direction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push</span><span class="w">                </span><span class="c1"># push | pull</span>
+<span class="w">    </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab_remote_mirror</span><span class="w">  </span><span class="c1"># MVP: nur dieser Wert</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">only_protected_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">keep_divergent_refs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">    </span><span class="nt">auth_method</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span><span class="w">             </span><span class="c1"># token | ssh_deploy_key (Phase 2)</span>
+</code></pre></div>
+<h3 id="52-mehrere-config-dateien-phase-2">5.2 Mehrere Config-Dateien (Phase 2)<a class="headerlink" href="#52-mehrere-config-dateien-phase-2" title="Permanent link">&para;</a></h3>
+<p>Variante B (analog getrenntem „Sets“-Konzept): <code>repoman.yaml</code> enthält nur <code>version</code>, <code>settings</code>,
+<code>paths</code>, <code>remotes</code>. Namespaces, Repos und Mirrors liegen in
+<code>~/.config/repoman/sets/*.yaml</code> und werden per <code>includes:</code> referenziert. Im MVP
+genügt eine Datei.</p>
+<p><strong>Hinweis (MVP):</strong> Eine zentrale <code>repoman.yaml</code> pro Maschine; mehrere Dateien / <code>includes:</code> bleiben Phase 2.</p>
+<h3 id="53-schema-validierung">5.3 Schema-Validierung<a class="headerlink" href="#53-schema-validierung" title="Permanent link">&para;</a></h3>
+<p><code>repoman config validate</code> lädt YAML, prüft:</p>
+<ul>
+<li>Top-Level-Keys gegen Schema (typed dict / pydantic in Phase 2).</li>
+<li><code>remote</code>-Verweise in <code>namespaces</code>/<code>repos</code>/<code>mirrors</code> zeigen auf einen Eintrag
+  unter <code>remotes</code>.</li>
+<li><code>kind</code> ist <code>gitlab</code> oder <code>github</code>.</li>
+<li><code>backend</code> in Mirrors ist erlaubt für die jeweilige <code>source.remote.kind</code>
+  (z. B. <code>gitlab_remote_mirror</code> nur wenn source.kind == gitlab).</li>
+<li>Layout-Platzhalter sind bekannt.</li>
+<li><code>mirror.id</code> ist global eindeutig.</li>
+</ul>
+<p>Ergebnis: Status-Zeilen wie</p>
+<div class="highlight"><pre><span></span><code>OK            config.version            1
+OK            remotes.gitlab            base_url=https://gitlab.example.com
+ERROR         mirrors[2].backend        local_push not supported for source.kind=github (Phase 2)
+</code></pre></div>
+<h2 id="6-secrets-token-management">6. Secrets / Token-Management<a class="headerlink" href="#6-secrets-token-management" title="Permanent link">&para;</a></h2>
+<p>Tokens stehen <strong>nie</strong> in <code>repoman.yaml</code> und nicht im Git. Resolver-Reihenfolge,
+<strong>höchste Priorität zuerst</strong>:</p>
+<ol>
+<li><code>--token</code> CLI-Flag (ephemer, nur für laufendes Kommando, nicht persistiert).</li>
+<li><strong>Env-Variable</strong>, benannt in <code>remotes.&lt;r&gt;.token_env</code>.</li>
+<li><strong>Credentials-Datei</strong> <code>~/.config/repoman/credentials.toml</code>, referenziert über
+   <code>remotes.&lt;r&gt;.token_credentials: "&lt;section&gt;"</code>. Beim Lesen prüft <code>repoman</code> die
+   Dateirechte (POSIX: muss <code>0600</code> sein, sonst <code>ERROR</code> und Abbruch).</li>
+<li><strong>OS-Keyring</strong> über <code>keyring</code> (Phase 2), Eintrag aus
+   <code>remotes.&lt;r&gt;.token_keyring: { service, account }</code>.</li>
+<li><strong>Forge-CLI</strong> als Fallback (Phase 2): <code>gh auth token</code> für GitHub, <code>glab auth status</code>
+   für GitLab — nur wenn keine der oberen Quellen konfiguriert ist.</li>
+</ol>
+<p>Format <code>credentials.toml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ~/.config/repoman/credentials.toml  (chmod 600)</span>
+<span class="k">[gitlab]</span>
+<span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;glpat-...&quot;</span>
+
+<span class="k">[github]</span>
+<span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;ghp_...&quot;</span>
+</code></pre></div>
+<h3 id="61-verwendung-von-tokens">6.1 Verwendung von Tokens<a class="headerlink" href="#61-verwendung-von-tokens" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>API-Calls</strong> (<code>python-gitlab</code>, <code>PyGithub</code>): Token wird per HTTP-Header
+  übergeben, niemals in der URL.</li>
+<li><strong>Git-Clone/Push</strong> über HTTPS: Token wird zur <strong>Laufzeit</strong> in die URL injiziert
+  (<code>https://oauth2:${TOKEN}@gitlab.example.com/...</code>) und vor dem Logging
+  <strong>redacted</strong>. Alternative bei <code>clone_protocol: ssh</code>: kein Token nötig,
+  SSH-Schlüssel des Users wird verwendet.</li>
+<li><strong>Audit-Log und Status-Zeilen</strong>: Token-Strings werden mit Regex-Filter
+  maskiert (<code>***REDACTED***</code>).</li>
+</ul>
+<h3 id="62-secret-doctor-check">6.2 Secret-Doctor-Check<a class="headerlink" href="#62-secret-doctor-check" title="Permanent link">&para;</a></h3>
+<p><code>repoman doctor</code> prüft pro <code>remotes.&lt;r&gt;</code>:</p>
+<ul>
+<li>Quelle aufgelöst? (welche der 1–5)</li>
+<li>Token präsent und nicht leer?</li>
+<li>API-Probe <code>GET /version</code> (GitLab) bzw. <code>GET /user</code> (GitHub) erfolgreich? Wenn
+  <code>--skip-network</code> gesetzt, nur Auflösung prüfen.</li>
+<li>Permissions des Tokens — wird nur als <code>WARN</code> ausgegeben („insufficient scope
+  for remote_mirror“ etc.), nicht als hartes <code>ERROR</code>.</li>
+</ul>
+<h2 id="7-command-surface">7. Command-Surface<a class="headerlink" href="#7-command-surface" title="Permanent link">&para;</a></h2>
+<p><div class="highlight"><pre><span></span><code>repoman --version
+repoman --help
+
+repoman config init     [--config PATH] [--force]          # Template → Zieldatei
+repoman config validate [--config PATH]
+repoman config show     [--config PATH] [--resolved]      # mit Defaults aufgelöst
+repoman config path                                       # gibt aktiven Config-Pfad aus
+repoman config set KEY VALUE [--write] [--unset]          # dotted keys; Preview ohne --write
+
+repoman doctor [--skip-network] [--config PATH]
+
+# --- LOCAL ---
+repoman local plan     [--namespace NAME]... [--changes-only]
+                       # äquivalent zu `local sync --dry-run`
+repoman local sync     [--namespace NAME]... [--write] [--changes-only]
+                       [--parallel N] [--strategy ff-only|fetch-only]
+repoman local status   [--namespace NAME]... [--json]
+                       # read-only: ahead/behind, dirty, last-fetch
+repoman local clone    SOURCE_PATH [--remote NAME] [--into PATH]
+
+# --- MIRRORS ---
+repoman mirrors plan   [--id ID]... [--changes-only]
+repoman mirrors sync   [--id ID]... [--write]
+repoman mirrors list   [--json]
+repoman mirrors lock   [--write]                # schreibt repoman.lock
+                       # erfasst aktuellen Server-Zustand aller Mirrors
+</code></pre></div>
+<strong>Onboarding:</strong> <code>repoman config init</code> erzeugt <code>repoman.yaml</code> aus dem Bundled-Template;
+<code>repoman config set</code> ändert dotted Keys (Preview ohne <code>--write</code>). Ein interaktiver Setup-Wizard
+ist für eine spätere Phase vorgesehen (siehe <code>.adr.md</code>).</p>
+<p>Bewusst <strong>nicht</strong> im MVP:</p>
+<ul>
+<li><code>mirrors add</code> / <code>mirrors remove</code> (CLI ändert YAML) — kommt frühestens Phase 3,
+  weil YAML-Edit per Hand fürs MVP ausreicht und Edit-Code bessere Validierung
+  braucht.</li>
+<li><code>local remove</code> / <code>local prune</code> — räumt verwaiste Klone weg. Erst, wenn das
+  Doctor-Tooling stabil ist.</li>
+</ul>
+<h3 id="71-status-vokabular-und-exit-codes-verbindlich">7.1 Status-Vokabular und Exit-Codes (verbindlich)<a class="headerlink" href="#71-status-vokabular-und-exit-codes-verbindlich" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>OK            &lt;subject&gt;   &lt;detail&gt;
+WOULD UPDATE  &lt;subject&gt;   &lt;plan&gt;
+UPDATED       &lt;subject&gt;   &lt;result&gt;
+SKIP          &lt;subject&gt;   &lt;reason&gt;
+WARN          &lt;subject&gt;   &lt;hint&gt;
+ERROR         &lt;subject&gt;   &lt;message&gt;
+</code></pre></div>
+<p>Exit-Codes:</p>
+<ul>
+<li><code>0</code> – alles <code>OK</code> oder nur <code>WOULD …</code>/<code>SKIP</code>/<code>WARN</code>.</li>
+<li><code>1</code> – mindestens ein <code>ERROR</code> während Ausführung.</li>
+<li><code>2</code> – Konfigurations- oder Argumentfehler (vor jedem I/O).</li>
+</ul>
+<h3 id="72-beispiel-output">7.2 Beispiel-Output<a class="headerlink" href="#72-beispiel-output" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>$ repoman local sync --namespace acme-org
+OK            workspace_root             ~/repositories exists
+OK            remotes.gitlab.api         200 https://gitlab.example.com/api/v4
+OK            discovery.acme-org         42 repos (cache age 14m)
+WOULD UPDATE  acme-org/widget            clone https → ./gitlab/acme-org/widget
+WOULD UPDATE  acme-org/service-a         pull --ff-only (4 commits behind)
+SKIP          acme-org/legacy-app       non-ff: 2 ahead, 3 behind
+OK            acme-org/utils            up-to-date
+ERROR         acme-org/private-proj     403 from GitLab (token lacks read scope)
+</code></pre></div>
+<h2 id="8-feature-detail-local-sync">8. Feature-Detail: <code>local sync</code><a class="headerlink" href="#8-feature-detail-local-sync" title="Permanent link">&para;</a></h2>
+<h3 id="81-algorithmus">8.1 Algorithmus<a class="headerlink" href="#81-algorithmus" title="Permanent link">&para;</a></h3>
+<p>Pseudo-Pipeline:</p>
+<div class="highlight"><pre><span></span><code>1. Konfig laden + validieren
+2. Pro namespaces[i]:
+     repos_remote = discovery(remote, name, include_subgroups, visibility)
+     repos_remote = filter(repos_remote, include, exclude)
+3. Vereinige mit explizit aufgelisteten repos[]
+4. Pro repo:
+     local_path = layout({remote},{namespace},{repo})  (unter workspace_root)
+     plan = decide(repo, local_path, fs_state)
+       - fehlt local_path  → CLONE
+       - existiert, .git missing → ERROR (&quot;not a git repo&quot;)
+       - existiert, origin.url != expected → WARN (&quot;remote drift&quot;) oder UPDATE (mit --write)
+       - existiert, normal → FETCH + PULL --ff-only
+       - existiert, dirty → SKIP (&quot;working tree dirty&quot;)
+       - existiert, ff nicht möglich → SKIP (&quot;non-ff: N ahead, M behind&quot;)
+5. Bei --write: ausführen, sonst nur Plan ausgeben.
+</code></pre></div>
+<h3 id="82-konflikt-politik-kompromisslos-sicher">8.2 Konflikt-Politik (kompromisslos sicher)<a class="headerlink" href="#82-konflikt-politik-kompromisslos-sicher" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Default-Pull-Strategie:</strong> <code>git fetch -p</code> + <code>git merge --ff-only @{u}</code> —
+  nichts wird rebased, nichts wird gerebased, nichts wird vermerged. Wenn <code>ff</code>
+  nicht möglich, wird das Repo geskippt mit klarem Grund.</li>
+<li><strong>Working-Tree-Dirty:</strong> wird unangetastet gelassen — <code>SKIP</code>. Das gilt explizit
+  auch im <code>--write</code>-Modus.</li>
+<li><strong>Detached HEAD oder Branch != Tracking-Branch:</strong> <code>SKIP</code> mit Hinweis.</li>
+<li><strong><code>origin.url</code>-Drift:</strong> Default nur <code>WARN</code>. Wer das auto-fixen will, muss
+  <code>--fix-remotes</code> setzen (Phase 2).</li>
+<li><strong>Submodules:</strong> im MVP <strong>nicht</strong> rekursiv. <code>SKIP</code> bei Submodul-Vorhandensein
+  mit <code>WARN: contains submodules — skipped</code>. Phase 2: <code>--submodules</code>.</li>
+</ul>
+<p>Diese Politik garantiert, dass <code>local sync</code> <strong>niemals</strong> lokale Arbeit zerstört —
+worst case sieht der User ein <code>SKIP</code> und schaut selbst nach.</p>
+<h3 id="83-parallelitat">8.3 Parallelität<a class="headerlink" href="#83-parallelitat" title="Permanent link">&para;</a></h3>
+<p><code>--parallel N</code> (Default aus <code>settings.parallelism</code>) nutzt einen
+<code>ThreadPoolExecutor</code>. Pro Repo eine Task. Ergebnisse landen in einer
+Queue, der Hauptthread schreibt Status-Zeilen geordnet (nach <code>namespace/repo</code>),
+sodass Output deterministisch und parsbar bleibt.</p>
+<h3 id="84-discovery-cache">8.4 Discovery-Cache<a class="headerlink" href="#84-discovery-cache" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Listing einer Group/Org wird unter
+  <code>${cache_root}/discovery/{remote}_{namespace_hash}.json</code> gespeichert.</li>
+<li>TTL: 15 Minuten Default, <code>settings.discovery_cache_ttl</code> überschreibbar.</li>
+<li><code>--refresh-discovery</code> ignoriert den Cache.</li>
+</ul>
+<p>Begründung: GitLab/GitHub-Listings sind langsam und Rate-Limit-anfällig; ein
+typischer Sync-Lauf will nicht jedesmal die Group-API durchpaginieren.</p>
+<h2 id="9-feature-detail-mirrors-sync">9. Feature-Detail: <code>mirrors sync</code><a class="headerlink" href="#9-feature-detail-mirrors-sync" title="Permanent link">&para;</a></h2>
+<h3 id="91-backend-gitlab_remote_mirror-mvp">9.1 Backend: <code>gitlab_remote_mirror</code> (MVP)<a class="headerlink" href="#91-backend-gitlab_remote_mirror-mvp" title="Permanent link">&para;</a></h3>
+<p>Für jeden Mirror-Eintrag mit <code>backend: gitlab_remote_mirror</code>:</p>
+<div class="highlight"><pre><span></span><code>1. Resolve source.path → GitLab project id (cached).
+2. GET /projects/:id/remote_mirrors → server_state.
+3. Plan = diff(desired_state, server_state) für (target_url, enabled,
+            only_protected_branches, keep_divergent_refs).
+4. Wenn target_url nicht existiert:           POST /remote_mirrors  → WOULD UPDATE / UPDATED
+   Wenn Drift in Feldern:                     PATCH .../:mirror_id → WOULD UPDATE / UPDATED
+   Wenn alles passt:                          OK / SKIP
+5. Token-URL: https://oauth2:${TARGET_TOKEN}@&lt;target.host&gt;/&lt;target.path&gt;.git
+   Token im Server-Mirror ist GitLab-seitig gespeichert; die API-Anfrage übergibt ihn beim POST.
+6. Audit-Log: jede schreibende Operation mit Zeitstempel, mirror.id, Aktion.
+</code></pre></div>
+<p>Wichtig: GitLab speichert den Token im Mirror-Objekt <strong>server-seitig</strong>.
+<code>repoman</code> selbst behält keinen Token persistent — er fließt nur durch die
+API-Aufrufe und wird in der lokalen URL nie auf Platte geschrieben.</p>
+<h3 id="92-lock-file-repomanlock">9.2 Lock-File <code>repoman.lock</code><a class="headerlink" href="#92-lock-file-repomanlock" title="Permanent link">&para;</a></h3>
+<p>Optional generiert via <code>repoman mirrors lock --write</code>. Format YAML/JSON:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">generated_at</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-05-12T20:35:00Z</span>
+<span class="nt">mirrors</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">widget-sync</span>
+<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> remote</span><span class="p">:</span><span class="w"> </span><span class="nv">gitlab</span><span class="p p-Indicator">,</span><span class="nt"> project_id</span><span class="p">:</span><span class="w"> </span><span class="nv">1234</span><span class="p p-Indicator">,</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="nv">acme-org/widget</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">target</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> remote</span><span class="p">:</span><span class="w"> </span><span class="nv">github</span><span class="p p-Indicator">,</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="nv">example-user/widget</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">server_state</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">mirror_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">87</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">only_protected_branches</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">keep_divergent_refs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">      </span><span class="nt">last_successful_update_at</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-05-12T20:00:11Z</span>
+<span class="w">      </span><span class="nt">last_error</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+</code></pre></div>
+<p>Zweck: reproduzierbarer Server-Zustand, gut für Diffs in Reviews. Lock-File ist
+<strong>nicht</strong> SSOT — das bleibt die YAML — aber sehr nützlich für Audits.</p>
+<h3 id="93-audit-log">9.3 Audit-Log<a class="headerlink" href="#93-audit-log" title="Permanent link">&para;</a></h3>
+<p><code>${state_root}/audit/YYYY-MM/repoman.log</code> (POSIX) bzw. unter
+<code>%LOCALAPPDATA%\repoman\audit\</code> (Windows). Eine Zeile pro mutierender Aktion,
+JSON-Lines:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span><span class="nt">&quot;ts&quot;</span><span class="p">:</span><span class="s2">&quot;2026-05-12T20:35:01Z&quot;</span><span class="p">,</span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="s2">&quot;mirror.create&quot;</span><span class="p">,</span><span class="nt">&quot;mirror_id&quot;</span><span class="p">:</span><span class="s2">&quot;widget-sync&quot;</span><span class="p">,</span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="s2">&quot;gitlab:acme-org/widget&quot;</span><span class="p">,</span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="s2">&quot;github:example-user/widget&quot;</span><span class="p">,</span><span class="nt">&quot;result&quot;</span><span class="p">:</span><span class="s2">&quot;ok&quot;</span><span class="p">,</span><span class="nt">&quot;http_status&quot;</span><span class="p">:</span><span class="mi">201</span><span class="p">}</span>
+</code></pre></div>
+<p>Tokens <strong>werden vor dem Loggen redacted</strong>.</p>
+<h3 id="94-backend-local_push-phase-2">9.4 Backend: <code>local_push</code> (Phase 2)<a class="headerlink" href="#94-backend-local_push-phase-2" title="Permanent link">&para;</a></h3>
+<p>Für Konstellationen, in denen kein server-seitiger Mirror möglich ist (z. B.
+GitLab CE Pull-Mirror nicht verfügbar, oder Quelle ist GitHub und Ziel ein <strong>selbst gehostetes GitLab</strong>):</p>
+<div class="highlight"><pre><span></span><code>cache_dir = ${cache_root}/mirror-cache/&lt;mirror.id&gt;.git
+1. wenn nicht existiert:   git clone --mirror &lt;source_url&gt; cache_dir
+2. git -C cache_dir remote update --prune
+3. git -C cache_dir remote set-url --push origin &lt;target_url&gt;
+4. git -C cache_dir push --mirror
+</code></pre></div>
+<p>Dieser Pfad mutiert lokal: <code>--write</code> Pflicht. Bare-Caches liegen <strong>außerhalb</strong>
+des <code>workspace_root</code> und werden nie als Working-Tree benutzt.</p>
+<h3 id="95-backend-github_actions_mirror-optional-phase-3">9.5 Backend: <code>github_actions_mirror</code> (Optional, Phase 3)<a class="headerlink" href="#95-backend-github_actions_mirror-optional-phase-3" title="Permanent link">&para;</a></h3>
+<p>Idee: <code>repoman</code> generiert eine GitHub-Action <code>.github/workflows/mirror.yml</code>
+samt nötigem Secret-Set via <code>gh secret set</code>. Diese Action pusht periodisch an
+ein Ziel. Sinnvoll für Open-Source-Repos, deren SSOT auf GitHub liegt und die
+zusätzlich in ein <strong>internes GitLab</strong> gespiegelt werden sollen. Im MVP nicht enthalten,
+weil es Schreibrechte auf das Source-Repo erfordert (Workflow-Datei) — das ist
+ein anderer Bedrohungsbereich als reine Konfiguration.</p>
+<h2 id="10-discovery-filter-include-exclude">10. Discovery-Filter (include / exclude)<a class="headerlink" href="#10-discovery-filter-include-exclude" title="Permanent link">&para;</a></h2>
+<p>Filter wirken <strong>nach</strong> dem API-Listing, <strong>bevor</strong> geplant wird.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">namespaces</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">remote</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gitlab</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">acme-org</span>
+<span class="w">    </span><span class="nt">include_subgroups</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">include</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/*&quot;</span>
+<span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;archived/**&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;**/sandbox-*&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;team-x/private-experiment&quot;</span>
+</code></pre></div>
+<p>Regeln:</p>
+<ul>
+<li><code>include</code> ist eine Liste von Globs gegen den <strong>relativen Pfad</strong> unterhalb
+  <code>namespace.name</code> (also <code>archived/foo</code>, nicht <code>acme-org/archived/foo</code>).</li>
+<li><code>exclude</code> läuft <strong>nach</strong> <code>include</code> und entfernt Treffer.</li>
+<li>Default ohne beide Listen: <code>include: ["**/*"]</code>, kein Exclude — also alles.</li>
+<li>Glob-Engine: <code>pathlib.PurePosixPath.match</code> (<code>**</code>-tauglich via <code>fnmatch</code>).</li>
+<li>Visibility-Filter (<code>visibility: [public, private]</code>) wirkt <strong>vor</strong> Glob — auf
+  Listing-Ebene, um API-Rauschen zu vermeiden.</li>
+</ul>
+<p>Konsequenz für Audits: <code>repoman doctor</code> listet pro Namespace, was nach Filter
+übrig bleibt und welche Repos rausgeflogen sind (<code>SKIP</code> mit Begründung).</p>
+<h2 id="11-tests-und-qualitat">11. Tests und Qualität<a class="headerlink" href="#11-tests-und-qualitat" title="Permanent link">&para;</a></h2>
+<h3 id="111-test-pyramide">11.1 Test-Pyramide<a class="headerlink" href="#111-test-pyramide" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Unit</strong> (≥ 80 % Coverage Ziel):</li>
+<li><code>paths.layout(...)</code> Permutationen.</li>
+<li><code>planner.decide(...)</code> mit synthetischen FS-/Server-Zuständen.</li>
+<li><code>discovery.filter(...)</code> mit Glob-Edge-Cases.</li>
+<li><code>secrets.resolve(...)</code> mit allen Quellen + Präzedenz.</li>
+<li><code>config.validate(...)</code> mit Bad-Inputs.</li>
+<li><code>status.format(...)</code> und Status-Aggregation.</li>
+<li><strong>Integration</strong>:</li>
+<li><strong>Lokale Bare-Repos als Fake-Remote</strong>: <code>tmp_path/origin.git</code>,
+    <code>tmp_path/local/...</code> → <code>local sync</code> durchspielen ohne Netz.</li>
+<li>Gemockte GitLab-API (<code>responses</code>/<code>pytest-httpx</code>) für <code>mirrors sync</code>.</li>
+<li><code>gh</code>-Subprocess wird per Fake-CLI auf <code>$PATH</code> (Dummy-Skript) gemockt.</li>
+<li><strong>CLI-Smoke</strong> mit <code>click.testing.CliRunner</code>.</li>
+</ul>
+<h3 id="112-lint-format-type-check">11.2 Lint, Format, Type-Check<a class="headerlink" href="#112-lint-format-type-check" title="Permanent link">&para;</a></h3>
+<p><code>uv run ruff check . &amp;&amp; uv run ruff format . &amp;&amp; uv run pytest</code> vor jedem
+Commit. <code>mypy</code> (oder <code>pyright</code>) erst in Phase 2, sobald die API stabilisiert
+ist.</p>
+<h3 id="113-ci">11.3 CI<a class="headerlink" href="#113-ci" title="Permanent link">&para;</a></h3>
+<p>GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):</p>
+<ul>
+<li><code>ruff check</code>, <code>ruff format --check</code></li>
+<li><code>pytest --cov</code></li>
+<li><code>mkdocs build --strict</code></li>
+<li>(optional) Build &amp; Publish auf TestPyPI bei Tags.</li>
+</ul>
+<h2 id="12-roadmap">12. Roadmap<a class="headerlink" href="#12-roadmap" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Inhalt</th>
+<th>Abnahmekriterium</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Repo aufsetzen, <code>uv init</code>, leeres CLI mit <code>--version</code></td>
+<td><code>uv run repoman --version</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>config validate</code>, <code>doctor</code>, Loader, Secrets-Resolver, Token-Doctor</td>
+<td>YAML laden + Tokens auflösen + Remote-Probe</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>local plan</code> / <code>local sync</code> (gitlab+github), Filter, Cache</td>
+<td>1 Group mit 5 Repos auf Festplatte; Konflikte werden geskippt</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>local status</code> (ahead/behind/dirty), <code>--json</code>-Output</td>
+<td>Tabellen-/JSON-Output für Automation</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>mirrors plan</code> / <code>mirrors sync</code> mit <code>gitlab_remote_mirror</code></td>
+<td>Test-Repo-Paar wird idempotent konfiguriert; Audit-Log geschrieben</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>mirrors lock</code>, Drift-Erkennung, bessere Doctor-Checks</td>
+<td>Lock-File reproduziert Server-Zustand</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>local_push</code>-Backend, <code>--submodules</code>, <code>--fix-remotes</code></td>
+<td>Fallback-Mirror lauffähig</td>
+</tr>
+<tr>
+<td>7</td>
+<td>mkdocs-Doku, <code>uv tool install</code>-fähiger Release</td>
+<td><code>pipx</code>/<code>uv tool install repoman</code> aus PyPI</td>
+</tr>
+</tbody>
+</table>
+<p>Pro Phase: kleiner MR, Tests, <code>.adr.md</code>-Häkchen, Doku-Update.</p>
+<h2 id="13-integration-mit-anderen-werkzeugen">13. Integration mit anderen Werkzeugen<a class="headerlink" href="#13-integration-mit-anderen-werkzeugen" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Externe <strong>Workspace- oder Setup-Orchestrierer</strong> können <code>repoman</code> als <strong>Python-Dependency</strong>
+  importieren oder per <strong>Subprozess</strong> aufrufen (z. B. „Klone die Repos dieses Projekts in einen
+  vorgegebenen Baum“).</li>
+<li><strong>Konfiguration bleibt getrennt:</strong> <code>repoman</code> liest nur <code>repoman.yaml</code> (und referenzierte Includes
+  in späteren Phasen). Fremde Tools übergeben bei Bedarf eine kleine, <code>repoman</code>-konforme
+  Repo-/Namespace-Liste per <strong>CLI-Argumenten oder Stdin</strong> — keine implizite Kopplung an fremde
+  YAML-Schemata.</li>
+<li>Koordination mit anderen Projekten (Roadmaps, Backlog-Dateien) erfolgt <strong>außerhalb</strong> dieses
+  Repos; dieses Dokument beschreibt ausschließlich die öffentliche <code>repoman</code>-Oberfläche.</li>
+</ul>
+<h2 id="14-open-design-decisions">14. Open Design Decisions<a class="headerlink" href="#14-open-design-decisions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Pydantic vs. plain dict + Validation</strong>: zunächst plain dicts mit manuellen <code>validate_*</code>-Funktionen;
+  Pydantic in Phase 2, wenn das Schema wächst.</li>
+<li><strong><code>clone_protocol</code> Default</strong>: <code>https</code> (mit Token) oder <code>ssh</code>? Vorschlag: pro Remote konfigurierbar;
+  Default <code>https</code> für GitLab (Tokens vorhanden), <code>ssh</code> für GitHub (SSH-Keys verbreitet).
+  <strong>Entscheidung / Hinweis:</strong> pro Remote frei wählbar; Default <strong><code>ssh</code></strong> für alle Remotes, sofern
+  nicht anders gesetzt (vereinfacht lokale Agent-Setups ohne Token in der Remote-URL).</li>
+<li><strong><code>namespace</code> als Konzept für GitHub</strong>: ein GitHub-User ist eigentlich kein Namespace, sondern
+  „repos owned by user/org“. Absichtlich verallgemeinert als <code>namespace</code>; in der Doku klar als
+  <strong>user/org</strong> erklären.</li>
+<li><strong><code>repoman.lock</code>-Format</strong>: YAML (gut lesbar) oder TOML (typisierter)? Vorschlag YAML, weil Diffs
+  mit <code>repoman.yaml</code> vergleichbar bleiben. <strong>Hinweis:</strong> TOML ist möglich, sobald Lesbarkeit vs.
+  Tooling klar zugunsten von TOML spricht (ähnlich wie bei Lockfiles in anderen Ökosystemen).</li>
+<li><strong>Soft-Delete / Prune</strong>: lokale Klone, die nicht mehr in der Konfig stehen, <strong>nie automatisch</strong>
+  löschen — nur per <code>repoman local prune --write</code> (Phase 3+).</li>
+<li><strong>Bidirektionale Mirrors</strong>: bewusst nicht; wer bidirektionale Flüsse braucht, definiert <strong>zwei</strong>
+  einseitige Einträge und akzeptiert Konflikt-Risiko. Typische Muster: eine Forge als SSOT mit
+  einseitigem Push-Spiegel; wenn <strong>GitLab-Push-Mirrors</strong> ungeeignet sind (Policy, Edition, Quelle
+  auf GitHub), greifen spätere Backends (<code>local_push</code>, GitHub Actions, manuelle Git-Läufe) — siehe
+  Roadmap und §9.</li>
+<li><strong>Multi-Tenant-Configs</strong>: Eine Datei pro Maschine, oder Profil-Dateien mit <code>--profile work</code>?
+  MVP: ein <code>repoman.yaml</code>; Profile in Phase 2 via <code>${REPOMAN_PROFILE}</code>. <strong>MVP-Entscheidung:</strong>
+  eine Datei pro Maschine reicht zunächst; getrennte Profile sind optional.</li>
+<li><strong>Erst CLI, später Library</strong>: API-Surface der Python-Module absichtlich <strong>intern</strong> halten
+  (<code>repoman._internal</code> oder eingeschränktes <code>__all__</code>), um API-Brüche während Phase 2 zu vermeiden.</li>
+<li><strong>Discovery-Caching im CI</strong>: in CI deaktivieren (<code>CI=true</code> → TTL 0). Doku-Hinweis.</li>
+</ul>
+<h2 id="15-sicherheits-und-ip-hinweise">15. Sicherheits- und IP-Hinweise<a class="headerlink" href="#15-sicherheits-und-ip-hinweise" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Allowlist statt Wildcard</strong> für <code>mirrors</code>: nur explizit benannte Mirrors
+  werden konfiguriert. Es gibt keinen <code>mirror_all</code>-Schalter.</li>
+<li><strong>Pre-write-Bestätigung</strong> (<code>--write</code> ohne <code>--yes</code>) für Mirror-Mutationen:
+  Liste der geplanten Aktionen, dann interaktive Bestätigung; in CI durch
+  <code>--yes</code> oder <code>REPOMAN_ASSUME_YES=1</code> umgehbar.</li>
+<li><strong>Tokens niemals in YAML / Logs / Audit</strong>. Regex-Redaction beim Logger.</li>
+<li><strong>Pfade abstrahieren</strong> in versionierten Beispielen (<code>&lt;user&gt;</code>, <code>&lt;org&gt;</code>).
+  Konkrete Firmen- oder Kunden-Identifier nur in der user-lokalen <code>repoman.yaml</code>.</li>
+<li><strong>Vertragliche Abklärung</strong>: Spiegeln von firmen-internen Repos auf öffentlich
+  zugängliche GitHub-Repos bleibt eine <strong>organisatorische</strong> Entscheidung — das
+  Tool macht es technisch möglich, erzwingt aber keine Compliance-Entscheidung.
+  <strong>Hinweis:</strong> Private Ziel-Repos reduzieren das Offenlegungsrisiko.</li>
+</ul>
+<h2 id="16-konkrete-erste-schritte-phase-01">16. Konkrete erste Schritte (Phase 0/1)<a class="headerlink" href="#16-konkrete-erste-schritte-phase-01" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Repo <code>repoman</code> auf GitHub anlegen, <code>uv init</code>.</li>
+<li><code>pyproject.toml</code> mit einem typischen Python-CLI-Stack: <code>click</code>, <code>pyyaml</code>, <code>python-gitlab</code>,
+   <code>PyGithub</code>, <code>httpx</code>; <code>dev</code>-Gruppe <code>ruff</code>, <code>pytest</code>, <code>pytest-cov</code>,
+   <code>pytest-httpx</code>, <code>mkdocs-material</code>, <code>mkdocstrings</code>.</li>
+<li>CLI-Skelett (<code>__main__.py</code>, <code>cli.py</code> mit <code>--version</code>, <code>config validate</code>,
+   <code>doctor</code> als No-Op).</li>
+<li><code>config.py</code> + <code>secrets.py</code> + Tests gegen synthetische YAMLs.</li>
+<li><code>remotes/gitlab_client.py</code> + <code>remotes/github_client.py</code> minimal (nur
+   <code>whoami</code> + <code>list_namespace</code>).</li>
+<li><code>doctor</code> ruft Resolver + Whoami auf und gibt Status-Zeilen aus.</li>
+<li>CI-Pipeline (ruff, pytest, mkdocs build).</li>
+<li>Erst danach <code>local sync</code> gegen einen kleinen Pilot-Namespace unter eigener Kontrolle testen.</li>
+</ol>
+<h2 id="17-referenzen">17. Referenzen<a class="headerlink" href="#17-referenzen" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Öffentliche Dritt-Anleitungen und APIs (siehe YAML-<code>see_also</code>-Liste im Kopf dieses Dokuments).</li>
+<li><code>python-gitlab</code>: <a href="https://python-gitlab.readthedocs.io/">https://python-gitlab.readthedocs.io/</a></li>
+<li>GitLab Remote Mirror API:
+  <a href="https://docs.gitlab.com/ee/api/remote_mirrors.html">https://docs.gitlab.com/ee/api/remote_mirrors.html</a></li>
+<li><code>PyGithub</code>: <a href="https://pygithub.readthedocs.io/">https://pygithub.readthedocs.io/</a></li>
+<li><code>ghorg</code> (Inspiration Discovery): <a href="https://github.com/gabrie30/ghorg">https://github.com/gabrie30/ghorg</a></li>
+<li><code>gickup</code> (Inspiration Mirror-Modell): <a href="https://github.com/cooperspencer/gickup">https://github.com/cooperspencer/gickup</a></li>
+<li><code>tsrc</code> (Manifest-Stil): <a href="https://github.com/your-tools/tsrc">https://github.com/your-tools/tsrc</a></li>
+</ul>
+<h2 id="18-naechste-schritte">18. Naechste Schritte<a class="headerlink" href="#18-naechste-schritte" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[x] Entscheidung bestätigen: <code>repoman</code> als eigenständiges Python-Tool; begleitende
+      Workspace-Roadmaps extern koordinieren.</li>
+<li>[ ] Repo <code>repoman</code> auf GitHub veröffentlichen (MIT-Lizenz — Datei <a href="../../LICENSE"><code>LICENSE</code></a>).</li>
+<li>[x] Erste <code>repoman.yaml.example</code> (unter <code>src/repoman/templates/</code>) und CLI (<code>config</code>/<code>doctor</code>).</li>
+<li>[x] Phase 0 abschließen (<code>uv init</code>, CLI <code>--version</code>, Basis-Paket).</li>
+<li>[x] Phase 1 Kern (<code>config validate</code>/<code>show</code>/<code>path</code>, YAML-Loader, Secrets, Doctor + Tests).</li>
+<li>[x] Phase 2 Kern — <code>local plan</code> / <code>local sync</code> (Discovery-Cache, GitLab/GitHub-Listing, Layout, ff-only / fetch-only, Tests).</li>
+<li>[ ] Pilot-Sync gegen einen kleinen Namespace unter eigener Kontrolle ausprobieren (z. B. <code>&lt;org&gt;/sandbox-*</code>).</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "navigation.sections", "navigation.expand"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

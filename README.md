@@ -19,7 +19,8 @@
 | **[Getting started](docs/getting-started.md)** | Install, first config, tokens, first sync (start here) |
 | **[Full docs site](docs/index.md)** | MkDocs index — build with `uv run mkdocs serve` |
 | **[Design spec](docs/design/repoman.md)** | Architecture, schema, roadmap |
-| **[Examples](examples/)** | Safe runnable configs |
+| **[Examples](docs/examples.md)** | Runnable sample commands and namespace `include` / `exclude` recipes |
+| **[Examples (repo)](examples/)** | Safe runnable YAML under `examples/` |
 
 ## Requirements
 

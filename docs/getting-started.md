@@ -72,6 +72,8 @@ namespaces:
 For **your own GitHub user**, the token must allow **private repository read** (classic `repo` scope
 or equivalent fine-grained access). Otherwise `doctor` may succeed while `local plan` lists only public repos.
 
+More **`include` / `exclude`** patterns (allowlists, subtrees, globs) are in **[Examples → Namespace include and exclude](examples.md#namespace-include-and-exclude)**.
+
 ## 4. Tokens
 
 Tokens never belong in `repoman.yaml`. Choose one approach per remote:
