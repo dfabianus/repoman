@@ -1,6 +1,6 @@
 # CI/CD
 
-GitHub Actions workflows under [`.github/workflows/`](../../.github/workflows/):
+GitHub Actions workflows under [`.github/workflows/`](https://github.com/dfabianus/repoman/tree/main/.github/workflows):
 
 | Workflow | Trigger | Steps |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ GitHub Actions workflows under [`.github/workflows/`](../../.github/workflows/):
 
 ## GitHub Pages (documentation site)
 
-The site is built by [`.github/workflows/docs.yml`](../../.github/workflows/docs.yml) and published with
+The site is built by [`.github/workflows/docs.yml`](https://github.com/dfabianus/repoman/blob/main/.github/workflows/docs.yml) and published with
 **GitHub Actions** (not the legacy `gh-pages` branch).
 
 1. In the GitHub repo, open **Settings → Pages**.
