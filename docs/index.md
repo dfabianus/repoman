@@ -20,6 +20,7 @@ Mutating commands are **preview-first**: `local sync` only changes disk with **`
 ## Quick links
 
 - **[Getting started](getting-started.md)** — install, first config, tokens, first sync
+- **[Published docs](https://dfabianus.github.io/repoman/)** — live site (enable GitHub Pages first; see [Deployment](deployment/ci-cd.md))
 - **[Command reference](commands/index.md)** — all subcommands
 - **[Design specification](design/repoman.md)** — architecture, schema, roadmap
 - **[Examples](examples.md)** — runnable sample commands and namespace filter recipes

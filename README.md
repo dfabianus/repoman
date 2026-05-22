@@ -17,6 +17,7 @@
 | Resource | Description |
 | --- | --- |
 | **[Getting started](docs/getting-started.md)** | Install, first config, tokens, first sync (start here) |
+| **[Published docs](https://dfabianus.github.io/repoman/)** | MkDocs site (after GitHub Pages is enabled — see [Deployment](docs/deployment/ci-cd.md)) |
 | **[Full docs site](docs/index.md)** | MkDocs index — build with `uv run mkdocs serve` |
 | **[Design spec](docs/design/repoman.md)** | Architecture, schema, roadmap |
 | **[Examples](docs/examples.md)** | Runnable sample commands and namespace `include` / `exclude` recipes |

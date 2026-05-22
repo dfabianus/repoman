@@ -1,5 +1,6 @@
 site_name: repoman
 site_description: Declarative multi-forge Git workspace sync and mirror tooling
+site_url: https://dfabianus.github.io/repoman/
 repo_url: https://github.com/dfabianus/repoman
 edit_uri: edit/main/docs/
 
