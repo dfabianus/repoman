@@ -86,7 +86,7 @@ als alternative Backends angebunden werden.
 
 ## 3. Technologie-Entscheidungen
 
-### 3.1 Sprache: Python 3.13+
+### 3.1 Sprache: Python 3.11+
 
 Begründet, weil:
 

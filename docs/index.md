@@ -44,4 +44,4 @@ uv sync --all-groups
 uv run repoman --version
 ```
 
-Requirements: **Python ≥ 3.13**, **Git** on `PATH`, **[uv](https://docs.astral.sh/uv/)**.
+Requirements: **Python ≥ 3.11**, **Git** on `PATH`, **[uv](https://docs.astral.sh/uv/)**.

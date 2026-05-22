@@ -45,8 +45,8 @@ Use **uv** for every environment and dependency operation.
 
 | Area | Rule |
 | --- | --- |
-| Python | 3.13+ per `requires-python` in `pyproject.toml` |
-| Linter / formatter | **ruff** (line length **100**, target **py313**) |
+| Python | 3.11+ per `requires-python` in `pyproject.toml` |
+| Linter / formatter | **ruff** (line length **100**, target **py311**) |
 | Type hints | Required on every **public** function and method |
 | Docstrings | Google style on public APIs; module docstring at top of each `.py` file |
 | Imports | ruff isort; prefer absolute imports |

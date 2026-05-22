@@ -5,7 +5,7 @@ description = "Declarative multi-forge Git workspace sync and mirror management"
 authors = [
     { name = "Fabian Müller", email = "fabianmueller100295@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.11"
 license = "MIT"
 readme = "README.md"
 dependencies = [
@@ -35,7 +35,7 @@ pythonpath = ["src"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

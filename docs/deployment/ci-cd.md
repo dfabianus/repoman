@@ -21,7 +21,7 @@ The site is built by [`.github/workflows/docs.yml`](https://github.com/dfabianus
 
 `site_url` in `mkdocs.yml` must stay in sync with that public URL so search, `sitemap.xml`, and absolute links behave correctly.
 
-Reproduce CI locally:
+Reproduce CI locally (GitHub Actions uses **Python 3.11** via `setup-uv`):
 
 ```bash
 uv sync --all-groups

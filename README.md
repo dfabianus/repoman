@@ -25,7 +25,7 @@
 
 ## Requirements
 
-- **Python ≥ 3.13**
+- **Python ≥ 3.11**
 - **Git** on `PATH`
 - **[uv](https://docs.astral.sh/uv/)** — environments and CI
 

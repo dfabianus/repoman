@@ -19,6 +19,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          python-version: "3.11"
 
       - name: Sync environment
         run: uv sync --all-groups

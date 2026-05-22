@@ -19,7 +19,7 @@ The PyPI distribution is **`repoman-cli`**; the command remains **`repoman`**.
 
 | Tool | Purpose |
 | --- | --- |
-| [Python 3.13+](https://www.python.org/) | Runtime |
+| [Python 3.11+](https://www.python.org/) | Runtime |
 | [Git](https://git-scm.com/) | Clone, fetch, merge (`git` on `PATH`) |
 | [uv](https://docs.astral.sh/uv/) | Environments and lockfile sync |
 
