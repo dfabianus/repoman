@@ -322,16 +322,16 @@ Workflows live under [`.github/workflows/`](.github/workflows/).
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
 | `ci.yml` | Push / PR to `main` or `master` | `uv sync --all-groups`, `ruff check`, `ruff format --check`, `pytest` |
-| `release.yml` | Push SemVer tags `vX.Y.Z` (optional pre-release suffix) | `uv build`, upload artefacts, GitHub Release with generated notes |
+| `release.yml` | Push SemVer tags `vX.Y.Z` (optional pre-release suffix) | `uv build`, upload artefacts, GitHub Release with generated notes, publish **`repoman-cli`** to PyPI |
 
 **Rules**
 
 - CI commands must stay reproducible locally (`uv run …`).
 - Adding MkDocs extends **`ci.yml`** with `uv run mkdocs build --strict` once the docs
   scaffold lands.
-- Publishing to **PyPI** is optional: enable **trusted publishing** (OIDC) with
-  `pypa/gh-action-pypi-publish` only after the PyPI project is configured; until then,
-  wheels remain GitHub Release artefacts only.
+- Publishing to **PyPI** uses **trusted publishing** (OIDC) via `pypa/gh-action-pypi-publish` in
+  `release.yml`; the distribution name is **`repoman-cli`**. Configure the GitHub **environment**
+  **`pypi`** on both PyPI (trusted publisher) and GitHub (Settings → Environments) so OIDC matches.
 
 ## Versioning, releases, and release notes
 
@@ -351,8 +351,9 @@ Until automated tooling ties them together, bump **both**:
 - `project.version` in `pyproject.toml`
 - `__version__` in [`src/repoman/__init__.py`](src/repoman/__init__.py)
 
-Keep them identical for each release tag. Long-term, prefer reading version from
-package metadata only—when that migration happens, update this section.
+The **PyPI distribution name** is **`repoman-cli`** (`project.name`); the **import package** and CLI
+entry remain **`repoman`**. Keep `version` / `__version__` identical for each release tag. Long-term,
+prefer reading version from package metadata only—when that migration happens, update this section.
 
 ### Tags and GitHub Releases
 

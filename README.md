@@ -31,13 +31,25 @@
 
 ## Install
 
+### From PyPI (recommended)
+
+```bash
+pip install repoman-cli
+# or: uv pip install repoman-cli
+repoman --version
+```
+
+The PyPI **package name** is `repoman-cli`; the **CLI** command is still `repoman`.
+
+### From a clone (development)
+
 ```bash
 git clone <this-repo-url> repoman && cd repoman
 uv sync --all-groups
 uv run repoman --version
 ```
 
-Optional: install the CLI into the active environment:
+Optional: install the CLI into the active environment from the checkout:
 
 ```bash
 uv pip install .

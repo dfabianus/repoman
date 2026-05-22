@@ -98,7 +98,7 @@ Begründet, weil:
 - `PyGithub` bzw. `gh` als Subprozess decken die GitHub-Seite ab.
 - Parallelität für I/O-bound Operationen erledigt
   `concurrent.futures.ThreadPoolExecutor` ohne Komplexität.
-- Distribution: `uv tool install repoman` reicht. Falls später ein Single-Binary
+- Distribution: `uv tool install repoman-cli` / `pip install repoman-cli` reicht. Falls später ein Single-Binary
   gewünscht ist, lässt sich `repoman` mit `pex`/`shiv` packen.
 
 Bewusst **kein** Bash: Skripte sind nicht Windows-tauglich, testarm und passen
@@ -660,7 +660,7 @@ GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):
 | 4 | `mirrors plan` / `mirrors sync` mit `gitlab_remote_mirror` | Test-Repo-Paar wird idempotent konfiguriert; Audit-Log geschrieben |
 | 5 | `mirrors lock`, Drift-Erkennung, bessere Doctor-Checks | Lock-File reproduziert Server-Zustand |
 | 6 | `local_push`-Backend, `--submodules`, `--fix-remotes` | Fallback-Mirror lauffähig |
-| 7 | mkdocs-Doku, `uv tool install`-fähiger Release | `pipx`/`uv tool install repoman` aus PyPI |
+| 7 | mkdocs-Doku, `uv tool install`-fähiger Release | `pipx`/`uv tool install repoman-cli` aus PyPI |
 
 Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
 

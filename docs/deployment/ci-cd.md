@@ -6,7 +6,7 @@ GitHub Actions workflows under [`.github/workflows/`](https://github.com/dfabian
 | --- | --- | --- |
 | `ci.yml` | Push / PR to `main` | `uv sync --all-groups`, `ruff check`, `ruff format --check`, `pytest`, `mkdocs build --strict` |
 | `docs.yml` | Push to `main` / `master`, or manual | `uv sync --all-groups`, `mkdocs build --strict`, deploy to **GitHub Pages** |
-| `release.yml` | Tag `v*.*.*` | `uv build`, GitHub Release assets |
+| `release.yml` | Tag `v*.*.*` | `uv build`, GitHub Release assets, **publish to PyPI** ([`repoman-cli`](https://pypi.org/project/repoman-cli/)) |
 
 ## GitHub Pages (documentation site)
 
@@ -31,4 +31,42 @@ uv run pytest
 uv run mkdocs build --strict
 ```
 
-Publishing to PyPI is optional; release wheels are attached to GitHub Releases when tags are pushed.
+Publishing to **PyPI** happens automatically when you push a matching SemVer tag (see below).
+
+## PyPI (`repoman-cli`)
+
+The **distribution** on PyPI is [`repoman-cli`](https://pypi.org/project/repoman-cli/) (the unqualified
+name `repoman` was already taken). Install with:
+
+```bash
+pip install repoman-cli
+# or: uv pip install repoman-cli
+```
+
+The **console command** remains `repoman` (see `[project.scripts]` in `pyproject.toml`).
+
+### Trusted publishing (OIDC)
+
+[`release.yml`](https://github.com/dfabianus/repoman/blob/main/.github/workflows/release.yml) uses
+[`pypa/gh-action-pypi-publish`](https://github.com/pypa/gh-action-pypi-publish) with **`id-token: write`**
+and a GitHub **environment** named **`pypi`**.
+
+1. On PyPI → your project → **Publishing** → the pending publisher should reference:
+   - **Repository:** `dfabianus/repoman` (or your fork if you publish from a fork),
+   - **Workflow:** `release.yml`,
+   - **Environment name:** `pypi` (must match the workflow job).
+2. On GitHub → **Settings → Environments** → create **`pypi`** (no protection rules required for a
+   solo maintainer; add reviewers if you want a manual gate).
+3. Bump `version` in `pyproject.toml` and `__version__` in `src/repoman/__init__.py`, merge to `main`,
+   then tag and push **`vX.Y.Z`** on that commit. The workflow uploads **`repoman-cli==X.Y.Z`**.
+
+If your PyPI publisher was created **without** an environment name, remove the `environment:` block
+from `release.yml` (or add `pypi` to the PyPI publisher configuration) so OIDC subjects match.
+
+### Reproduce release build locally
+
+```bash
+uv sync --all-groups
+uv build
+ls dist/
+```

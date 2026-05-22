@@ -1,11 +1,21 @@
 # Getting started
 
 This guide works on **Linux, macOS, and Windows**. Commands use `uv run repoman …`; omit `uv run`
-if you installed the CLI into your environment with `uv pip install .`.
+if the `repoman` CLI is on your `PATH` (for example after `pip install repoman-cli` or `uv pip install .` from a clone).
 
 ## 1. Install
 
-### Prerequisites
+### Install the CLI (PyPI)
+
+```bash
+pip install repoman-cli
+# or: uv pip install repoman-cli
+repoman --version
+```
+
+The PyPI distribution is **`repoman-cli`**; the command remains **`repoman`**.
+
+### Prerequisites (clone / development)
 
 | Tool | Purpose |
 | --- | --- |

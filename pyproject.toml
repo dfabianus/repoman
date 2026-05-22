@@ -1,5 +1,5 @@
 [project]
-name = "repoman"
+name = "repoman-cli"
 version = "0.4.0"
 description = "Declarative multi-forge Git workspace sync and mirror management"
 authors = [
@@ -7,6 +7,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 license = "MIT"
+readme = "README.md"
 dependencies = [
     "click>=8.3.3",
     "httpx>=0.28.1",
@@ -17,6 +18,16 @@ dependencies = [
 
 [project.scripts]
 repoman = "repoman.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/dfabianus/repoman"
+Documentation = "https://dfabianus.github.io/repoman/"
+Repository = "https://github.com/dfabianus/repoman"
+Issues = "https://github.com/dfabianus/repoman/issues"
+
+# Distribution name is repoman-cli; import package remains `repoman` under src/repoman.
+[tool.hatch.build.targets.wheel]
+packages = ["src/repoman"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
