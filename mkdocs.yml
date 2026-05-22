@@ -3,6 +3,11 @@ site_description: Declarative multi-forge Git workspace sync and mirror tooling
 repo_url: https://github.com/dfabianus/repoman
 edit_uri: edit/main/docs/
 
+# Session logs under docs/chatlogs/ are not part of the published site; excluding them
+# avoids mkdocs --strict failures on repo-relative links meant for GitHub viewers.
+exclude_docs: |
+  chatlogs/**
+
 theme:
   name: material
   features:

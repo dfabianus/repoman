@@ -50,7 +50,8 @@ uv run repoman config path
 
 === "Manual"
 
-    Copy [`src/repoman/templates/repoman.yaml.example`](../src/repoman/templates/repoman.yaml.example)
+    Copy the bundled template from the repository:
+    [`src/repoman/templates/repoman.yaml.example`](https://github.com/dfabianus/repoman/blob/main/src/repoman/templates/repoman.yaml.example)
     into the directory from the table above.
 
 Edit the file:

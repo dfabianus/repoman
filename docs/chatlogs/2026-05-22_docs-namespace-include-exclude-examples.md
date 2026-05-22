@@ -40,7 +40,7 @@ git push origin main
 
 ```bash
 uv sync --all-groups
-uv run mkdocs build --strict   # may warn on pre-existing chatlog / out-of-docs links
+uv run mkdocs build --strict
 uv run mkdocs serve            # browse Examples → “Namespace include and exclude”
 ```
 
@@ -69,7 +69,5 @@ adapt for GitHub (flat slugs) and GitLab (nested paths / `include_subgroups`).
 
 ### Follow-ups
 
-- Optional: resolve **`mkdocs build --strict`** warnings from older docs/chatlog links and
-  `getting-started.md` → template path so strict CI goes green without noise.
 - Consider a short **`examples/`** YAML snippet mirroring one recipe if maintainers want runnable
   parity (not required for this session).
