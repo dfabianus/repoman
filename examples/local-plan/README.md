@@ -8,8 +8,8 @@ Steps (from repo root):
 ```bash
 uv sync --all-groups
 REPOMAN_CONFIG="examples/local-plan/repoman.yaml"
-uv run repoman config validate --config "$REPOMAN_CONFIG"
-uv run repoman local plan --config "$REPOMAN_CONFIG"
+repoman config validate --config "$REPOMAN_CONFIG"
+repoman local plan --config "$REPOMAN_CONFIG"
 uv run pytest tests/integration/test_local_smoke.py -q
 ```
 

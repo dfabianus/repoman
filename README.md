@@ -34,7 +34,8 @@
 ### From PyPI (recommended)
 
 ```bash
-pip install repoman-cli
+pipx install repoman-cli
+# or: pip install repoman-cli
 # or: uv pip install repoman-cli
 repoman --version
 ```
@@ -61,8 +62,8 @@ repoman --version
 ### 1. Create configuration
 
 ```bash
-uv run repoman config init
-uv run repoman config path    # shows where repoman.yaml was created
+repoman config init
+repoman config path    # shows where repoman.yaml was created
 ```
 
 | Platform | Default config directory |
@@ -85,17 +86,17 @@ Use environment variables (`token_env` in YAML) or **`credentials.toml`** beside
 ### 4. Validate, preview, apply
 
 ```bash
-uv run repoman config validate
-uv run repoman doctor
-uv run repoman local plan                  # preview only
-uv run repoman local status                # read-only; add --json for automation
-uv run repoman local sync --write          # clones / fetch / ff-only merges
+repoman config validate
+repoman doctor
+repoman local plan                  # preview only
+repoman local status                # read-only; add --json for automation
+repoman local sync --write          # clones / fetch / ff-only merges
 ```
 
 Adjust settings without an editor:
 
 ```bash
-uv run repoman config set paths.workspace_root '~/repositories' --write
+repoman config set paths.workspace_root '~/repositories' --write
 ```
 
 **Safety:** `local sync` without `--write` never mutates clones; dirty trees and non–fast-forward states

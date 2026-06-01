@@ -101,8 +101,8 @@ def config_init_cmd(config: Path | None, force: bool) -> None:
         click.echo(
             f"  2. Optional: create {cred} for token_credentials (see docs/getting-started.md)",
         )
-        click.echo("  3. uv run repoman config validate")
-        click.echo("  4. uv run repoman doctor")
+        click.echo("  3. repoman config validate")
+        click.echo("  4. repoman doctor")
     raise SystemExit(exit_code_for_records(records))
 
 

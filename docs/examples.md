@@ -7,8 +7,8 @@ Runnable, token-free samples live in the repository under [`examples/`](../examp
 Safe preview with **no namespace discovery** (`namespaces: []`):
 
 ```bash
-uv run repoman config validate --config examples/local-plan/repoman.yaml
-uv run repoman local plan --config examples/local-plan/repoman.yaml
+repoman config validate --config examples/local-plan/repoman.yaml
+repoman local plan --config examples/local-plan/repoman.yaml
 ```
 
 To try live discovery, copy the YAML outside Git, add your `namespaces` and remotes, set tokens, then run

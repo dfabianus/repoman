@@ -1,14 +1,16 @@
 # Getting started
 
-This guide works on **Linux, macOS, and Windows**. Commands use `uv run repoman …`; omit `uv run`
-if the `repoman` CLI is on your `PATH` (for example after `pip install repoman-cli` or `uv pip install .` from a clone).
+This guide works on **Linux, macOS, and Windows**. Command examples assume the **`repoman`** CLI is on your
+`PATH` (for example after installing from PyPI). When working from a repository clone without a global install,
+use **`uv run repoman …`** from the project root after **`uv sync --all-groups`** (see **Prerequisites (clone / development)** below).
 
 ## 1. Install
 
 ### Install the CLI (PyPI)
 
 ```bash
-pip install repoman-cli
+pipx install repoman-cli
+# or: pip install repoman-cli
 # or: uv pip install repoman-cli
 repoman --version
 ```
@@ -45,7 +47,7 @@ on every command.
 Show the active path:
 
 ```bash
-uv run repoman config path
+repoman config path
 ```
 
 ## 3. Create your first config
@@ -53,7 +55,7 @@ uv run repoman config path
 === "Recommended (CLI)"
 
     ```bash
-    uv run repoman config init
+    repoman config init
     ```
 
     Creates `repoman.yaml` from the bundled template. Use **`--force`** to overwrite an existing file.
@@ -126,13 +128,21 @@ remotes:
 
 On Linux/macOS the file must be mode **`0600`** or token resolution fails. On Windows the mode check is skipped.
 
+Use the real path next to your `repoman.yaml` (default layout shown):
+
+```bash
+chmod 600 ~/.config/repoman/credentials.toml
+```
+
+If you use **`REPOMAN_HOME`** or a custom **`--config`** path, apply `chmod` to that directory’s `credentials.toml` instead.
+
 ## 5. Validate and diagnose
 
 ```bash
-uv run repoman config validate
-uv run repoman config show --resolved
-uv run repoman doctor
-uv run repoman doctor --skip-network   # token resolution only
+repoman config validate
+repoman config show --resolved
+repoman doctor
+repoman doctor --skip-network   # token resolution only
 ```
 
 ## 6. Preview, then sync
@@ -140,16 +150,16 @@ uv run repoman doctor --skip-network   # token resolution only
 Always preview first:
 
 ```bash
-uv run repoman local plan
-uv run repoman local plan --refresh-discovery
-uv run repoman local status
-uv run repoman local status --json
+repoman local plan
+repoman local plan --refresh-discovery
+repoman local status
+repoman local status --json
 ```
 
 Apply changes only when the plan looks correct:
 
 ```bash
-uv run repoman local sync --write
+repoman local sync --write
 ```
 
 **Safety:** without `--write`, `local sync` does not clone or merge. Dirty worktrees and non-fast-forward
@@ -160,19 +170,19 @@ states produce **`SKIP`**, not silent data loss.
 Preview a change:
 
 ```bash
-uv run repoman config set paths.workspace_root '~/repositories'
+repoman config set paths.workspace_root '~/repositories'
 ```
 
 Apply it:
 
 ```bash
-uv run repoman config set paths.workspace_root '~/repositories' --write
+repoman config set paths.workspace_root '~/repositories' --write
 ```
 
 Remove a key:
 
 ```bash
-uv run repoman config set settings.changes_only --unset --write
+repoman config set settings.changes_only --unset --write
 ```
 
 Keys use **dot notation**; numeric segments address list items (`namespaces.0.name`).
@@ -184,8 +194,8 @@ Values are parsed as YAML scalars (`true`, `4`, `["a","b"]`) or plain strings.
 Before touching live forges, use the bundled example (no discovery):
 
 ```bash
-uv run repoman config validate --config examples/local-plan/repoman.yaml
-uv run repoman local plan --config examples/local-plan/repoman.yaml
+repoman config validate --config examples/local-plan/repoman.yaml
+repoman local plan --config examples/local-plan/repoman.yaml
 ```
 
 See [Examples](examples.md).

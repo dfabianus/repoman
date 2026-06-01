@@ -9,10 +9,10 @@ All commands are **preview-first** except where noted.
 Show what `local sync` would do **without** writing to disk.
 
 ```bash
-uv run repoman local plan
-uv run repoman local plan --namespace my-org
-uv run repoman local plan --refresh-discovery
-uv run repoman local plan --changes-only
+repoman local plan
+repoman local plan --namespace my-org
+repoman local plan --refresh-discovery
+repoman local plan --changes-only
 ```
 
 | Flag | Effect |
@@ -28,8 +28,8 @@ uv run repoman local plan --changes-only
 Clone or update repositories. **Requires `--write`** to perform clones, fetch, or `merge --ff-only`.
 
 ```bash
-uv run repoman local sync              # preview only
-uv run repoman local sync --write      # apply
+repoman local sync              # preview only
+repoman local sync --write      # apply
 ```
 
 Same flags as `local plan`.
@@ -41,8 +41,8 @@ Same flags as `local plan`.
 Read-only report: clone presence, ahead/behind, dirty state, origin drift.
 
 ```bash
-uv run repoman local status
-uv run repoman local status --json
+repoman local status
+repoman local status --json
 ```
 
 Does not run `git fetch`, `clone`, or `merge`.

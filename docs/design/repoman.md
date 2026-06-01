@@ -653,7 +653,7 @@ GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):
 
 | Phase | Inhalt | Abnahmekriterium |
 |---|---|---|
-| 0 | Repo aufsetzen, `uv init`, leeres CLI mit `--version` | `uv run repoman --version` |
+| 0 | Repo aufsetzen, `uv init`, leeres CLI mit `--version` | `repoman --version` |
 | 1 | `config validate`, `doctor`, Loader, Secrets-Resolver, Token-Doctor | YAML laden + Tokens auflösen + Remote-Probe |
 | 2 | `local plan` / `local sync` (gitlab+github), Filter, Cache | 1 Group mit 5 Repos auf Festplatte; Konflikte werden geskippt |
 | 3 | `local status` (ahead/behind/dirty), `--json`-Output | Tabellen-/JSON-Output für Automation |

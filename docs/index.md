@@ -31,7 +31,9 @@ Mutating commands are **preview-first**: `local sync` only changes disk with **`
 From PyPI (installs the **`repoman`** CLI):
 
 ```bash
-pip install repoman-cli
+pipx install repoman-cli
+# or: pip install repoman-cli
+# or: uv pip install repoman-cli
 repoman --version
 ```
 

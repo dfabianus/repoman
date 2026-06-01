@@ -1,5 +1,5 @@
 # Example configuration for demos — DO NOT PUT REAL TOKENS HERE.
-# Use: uv run repoman local plan --config examples/local-plan/repoman.yaml
+# Use: repoman local plan --config examples/local-plan/repoman.yaml
 version: 1
 
 paths:

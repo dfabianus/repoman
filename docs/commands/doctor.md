@@ -3,8 +3,8 @@
 Read-only checks for configuration, token resolution, and optional remote API probes.
 
 ```bash
-uv run repoman doctor
-uv run repoman doctor --skip-network
+repoman doctor
+repoman doctor --skip-network
 ```
 
 | Flag | Effect |
