@@ -89,7 +89,9 @@ More **`include` / `exclude`** patterns (allowlists, subtrees, globs) are in **[
 
 ## 4. Tokens
 
-Tokens never belong in `repoman.yaml`. Choose one approach per remote:
+Tokens never belong in `repoman.yaml`. Choose one approach per remote.
+Precedence when several are set: `--token` > `token_env` > `token_command` >
+`token_credentials`.
 
 ### Environment variables
 
@@ -102,6 +104,26 @@ export REPOMAN_GITHUB_TOKEN="ghp_..."   # Linux/macOS
 ```powershell
 $env:REPOMAN_GITHUB_TOKEN = "ghp_..."   # Windows (current session)
 ```
+
+### Forge CLI command (no token on disk)
+
+If you already log in with a forge CLI, let repoman ask it for the token at
+run time. `token_command` is an argv list executed without a shell; the
+trimmed standard output is the token:
+
+```yaml
+remotes:
+  github:
+    kind: github
+    base_url: "https://api.github.com"
+    token_command: ["gh", "auth", "token"]
+    clone_protocol: ssh
+```
+
+Nothing secret is written to disk by repoman, and a machine that can already
+run `gh` needs no extra setup. A command that fails, times out (15 s), or
+prints nothing is reported as `ERROR` for that remote rather than silently
+falling back to a stale file. For GitLab use `["glab", "auth", "token"]`.
 
 ### credentials.toml (recommended for daily use)
 

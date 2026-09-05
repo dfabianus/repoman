@@ -28,7 +28,7 @@ from repoman.remotes.clone_urls import synthesized_clone_urls
 from repoman.remotes.discovery import filter_listed_projects, relative_repo_path_under_namespace
 from repoman.remotes.github_client import GithubRemoteClient
 from repoman.remotes.gitlab_client import GitlabRemoteClient
-from repoman.secrets import resolve_token
+from repoman.secrets import TokenCommandError, resolve_token
 from repoman.status import StatusRecord
 
 ForgeKind = Literal["gitlab", "github"]
@@ -372,7 +372,7 @@ def _prepare_local_workspace(
                     ),
                 )
                 listed_projects = filtered
-            except PermissionError as e:
+            except (PermissionError, TokenCommandError) as e:
                 records.append(StatusRecord("ERROR", subj_discovery, str(e)))
                 continue
             except RuntimeError as e:
@@ -610,7 +610,7 @@ def run_local(
                     credentials_file=cred_path,
                 )
                 tok_inner = tt if isinstance(tt, str) and tt.strip() else None
-            except PermissionError:
+            except (PermissionError, TokenCommandError):
                 tok_inner = None
         exe = authenticated_clone_url(
             forge_kind=repo.forge_kind,

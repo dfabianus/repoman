@@ -9,7 +9,7 @@ from repoman.doctor.checks import check_config_file_exists
 from repoman.paths import credentials_path_for_config
 from repoman.remotes.github_client import GithubRemoteClient
 from repoman.remotes.gitlab_client import GitlabRemoteClient
-from repoman.secrets import resolve_token
+from repoman.secrets import TokenCommandError, resolve_token
 from repoman.status import StatusRecord
 
 
@@ -55,7 +55,7 @@ def run_doctor(
                 cli_token=cli_tokens.get(rname),
                 credentials_file=cred_path,
             )
-        except PermissionError as e:
+        except (PermissionError, TokenCommandError) as e:
             records.append(StatusRecord("ERROR", subj + ".credentials", str(e)))
             continue
 

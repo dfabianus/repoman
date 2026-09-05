@@ -255,6 +255,8 @@ remotes:
     kind: github
     base_url: "https://api.github.com"
     token_env: "REPOMAN_GITHUB_TOKEN"
+    # alternativ, ohne Token auf der Platte:
+    # token_command: ["gh", "auth", "token"]
     clone_protocol: "ssh"
 
 # Default-Use-Case: ganze Namespaces tracken.
@@ -332,13 +334,15 @@ Tokens stehen **nie** in `repoman.yaml` und nicht im Git. Resolver-Reihenfolge,
 
 1. `--token` CLI-Flag (ephemer, nur für laufendes Kommando, nicht persistiert).
 2. **Env-Variable**, benannt in `remotes.<r>.token_env`.
-3. **Credentials-Datei** `~/.config/repoman/credentials.toml`, referenziert über
+3. **Forge-CLI-Kommando** (shipped): `remotes.<r>.token_command: ["gh", "auth", "token"]`,
+   eine argv-Liste ohne Shell; die getrimmte Standardausgabe ist das Token. Fehler,
+   Timeout (15 s) oder leere Ausgabe sind `ERROR` für dieses Remote — kein stiller
+   Fallback auf eine veraltete Datei.
+4. **Credentials-Datei** `~/.config/repoman/credentials.toml`, referenziert über
    `remotes.<r>.token_credentials: "<section>"`. Beim Lesen prüft `repoman` die
    Dateirechte (POSIX: muss `0600` sein, sonst `ERROR` und Abbruch).
-4. **OS-Keyring** über `keyring` (Phase 2), Eintrag aus
+5. **OS-Keyring** über `keyring` (Phase 2), Eintrag aus
    `remotes.<r>.token_keyring: { service, account }`.
-5. **Forge-CLI** als Fallback (Phase 2): `gh auth token` für GitHub, `glab auth status`
-   für GitLab — nur wenn keine der oberen Quellen konfiguriert ist.
 
 Format `credentials.toml`:
 

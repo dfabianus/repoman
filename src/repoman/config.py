@@ -125,12 +125,30 @@ def validate(data: dict[str, Any]) -> list[StatusRecord]:
         has_cred = (
             isinstance(rcfg.get("token_credentials"), str) and rcfg["token_credentials"].strip()
         )
-        if not has_token_env and not has_cred:
+        token_command = rcfg.get("token_command")
+        has_command = False
+        if token_command is not None:
+            if (
+                isinstance(token_command, list)
+                and token_command
+                and all(isinstance(part, str) and part.strip() for part in token_command)
+            ):
+                has_command = True
+            else:
+                records.append(
+                    StatusRecord(
+                        "ERROR",
+                        subj + ".token_command",
+                        'must be a non-empty list of strings, e.g. ["gh", "auth", "token"]',
+                    )
+                )
+                continue
+        if not has_token_env and not has_cred and not has_command:
             records.append(
                 StatusRecord(
                     "WARN",
                     subj + ".token",
-                    "neither token_env nor token_credentials — doctor may fail",
+                    "no token_env, token_command, or token_credentials — doctor may fail",
                 )
             )
         records.append(StatusRecord("OK", subj, f"kind={kind} base_url={base_url.strip()}"))
