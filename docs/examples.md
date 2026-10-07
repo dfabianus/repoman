@@ -121,4 +121,4 @@ namespaces:
 Replace remote kind, namespace name, and slugs with your own. Avoid `exclude: ["**/*"]` together with
 `include: ["**/*"]` unless you intend to match **no** repositories (exclude wins after include).
 
-For the full design notes, see [Design specification §10 — Discovery filters](design/repoman.md#10-discovery-filter-include-exclude).
+For the full design notes, see [Design — Discovery filters](design/repoman.md#discovery-filters).

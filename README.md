@@ -19,7 +19,7 @@
 | **[Getting started](docs/getting-started.md)** | Install, first config, tokens, first sync (start here) |
 | **[Published docs](https://dfabianus.github.io/repoman/)** | MkDocs site (after GitHub Pages is enabled — see [Deployment](docs/deployment/ci-cd.md)) |
 | **[Full docs site](docs/index.md)** | MkDocs index — build with `uv run mkdocs serve` |
-| **[Design spec](docs/design/repoman.md)** | Architecture, schema, roadmap |
+| **[Design](docs/design/repoman.md)** | Architecture, schema, key decisions |
 | **[Examples](docs/examples.md)** | Runnable sample commands and namespace `include` / `exclude` recipes |
 | **[Examples (repo)](examples/)** | Safe runnable YAML under `examples/` |
 
@@ -108,7 +108,7 @@ produce **`SKIP`**, not silent data loss.
 - **`doctor`** — tokens and optional API reachability
 - **`local plan` / `local sync` / `local status`** — discovery, layout, guarded git operations
 
-Not yet shipped: **`mirrors`** — see [roadmap](docs/design/repoman.md).
+Not yet shipped: **`mirrors`** — see [design](docs/design/repoman.md#mirrors-planned).
 
 ## Development
 

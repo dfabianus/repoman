@@ -41,7 +41,7 @@ nav:
       - doctor: commands/doctor.md
       - local: commands/local.md
       - mirrors (planned): commands/mirrors.md
-  - Design specification: design/repoman.md
+  - Design: design/repoman.md
   - Examples: examples.md
   - Deployment: deployment/ci-cd.md
 

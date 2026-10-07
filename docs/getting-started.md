@@ -225,5 +225,5 @@ See [Examples](examples.md).
 ## Next steps
 
 - [Command reference](commands/index.md)
-- [Design specification](design/repoman.md) — full schema and roadmap
+- [Design specification](design/repoman.md) — architecture and key decisions
 - Future: interactive **`config init`** wizard (tracked in the design doc)

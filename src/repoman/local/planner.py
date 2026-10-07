@@ -33,7 +33,7 @@ def plan_local_sync(
     """
     Decide whether to clone, fetch, fast-forward, or skip for a single subject.
 
-    Implements the conflict policy from ``docs/design/repoman.md`` §8.2: never
+    Implements the conflict policy from ``docs/design/repoman.md`` (Conflict policy): never
     destructive merges; dirty trees and non-fast-forward states are skipped.
     """
     rows: list[StatusRecord] = []

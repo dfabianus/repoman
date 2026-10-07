@@ -22,7 +22,7 @@ Mutating commands are **preview-first**: `local sync` only changes disk with **`
 - **[Getting started](getting-started.md)** — install, first config, tokens, first sync
 - **[Published docs](https://dfabianus.github.io/repoman/)** — live site (enable GitHub Pages first; see [Deployment](deployment/ci-cd.md))
 - **[Command reference](commands/index.md)** — all subcommands
-- **[Design specification](design/repoman.md)** — architecture, schema, roadmap
+- **[Design specification](design/repoman.md)** — architecture, schema, key decisions
 - **[Examples](examples.md)** — runnable sample commands and namespace filter recipes
 - **[Examples (repository)](../examples/)** — safe runnable YAML in the repo tree
 
