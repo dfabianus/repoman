@@ -84,8 +84,17 @@ Tokens are never in `repoman.yaml`, in git or in output. Resolution order, highe
    must be mode `0600`, otherwise resolution fails.
 
 - API calls pass the token in a header, never in a URL.
-- HTTPS clones embed the token in the clone URL at run time (`oauth2:` for GitLab,
-  `x-access-token:` for GitHub); with `ssh` no token is used.
+- HTTPS clone and fetch use the clean URL. The token goes to each `git` call through its
+  environment (`GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n`, git >= 2.31) as
+  `http.<scheme>://<host>/.extraheader = Authorization: Basic base64(<user>:<token>)`, user
+  `x-access-token` for GitHub and `oauth2` for GitLab. Existing `GIT_CONFIG_*` entries are
+  kept. So the token never lands in `.git/config` or in argv. With `ssh` no token is used.
+- Clones by repoman <= 0.5 have `https://<user>:<token>@...` as origin. When the origin is
+  exactly that (forge user above, configured HTTPS URL), sync rewrites it to the clean URL:
+  `WOULD UPDATE` in preview, `UPDATED` with `--write`. Other credentialed origins are left
+  alone.
+- Probed origin URLs are shown with credentials as `***`; git error output has the token
+  replaced by `***`.
 - `doctor` reports per remote which source resolved the token and probes the API; with
   `--skip-network` it only resolves tokens.
 

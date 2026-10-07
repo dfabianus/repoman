@@ -25,3 +25,23 @@ def canonical_git_remote(url: str) -> str:
         path = "/" + path
     rebuilt = urlunsplit((scheme, netloc, path, "", ""))
     return rebuilt.rstrip("/")
+
+
+def redact_url_credentials(url: str) -> str:
+    """
+    Replace credentials in an ``http(s)://`` URL with ``***`` for display.
+
+    ``https://user:secret@host/p`` becomes ``https://user:***@host/p``; a bare
+    ``https://secret@host/p`` becomes ``https://***@host/p``. Other schemes and
+    scp-style SSH URLs are returned unchanged.
+    """
+    parts = urlsplit(url)
+    if parts.scheme.lower() not in {"http", "https"} or "@" not in parts.netloc:
+        return url
+    userinfo, hostpart = parts.netloc.rsplit("@", 1)
+    if ":" in userinfo:
+        user = userinfo.split(":", 1)[0]
+        safe = f"{user}:***"
+    else:
+        safe = "***"
+    return urlunsplit((parts.scheme, f"{safe}@{hostpart}", parts.path, parts.query, parts.fragment))

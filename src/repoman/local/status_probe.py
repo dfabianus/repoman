@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from repoman.local.git_ops import run_git
+from repoman.remotes.url_normalize import redact_url_credentials
 
 
 @dataclass(frozen=True)
@@ -22,7 +23,7 @@ class RepoWorktreeFacts:
     upstream: str | None
     ahead: int
     behind: int
-    origin_url: str | None
+    origin_url: str | None  # credentials redacted
     last_fetch_epoch: float | None
 
 
@@ -86,7 +87,9 @@ def probe_worktree(repo_path: Path) -> RepoWorktreeFacts:
     dirty = dirt_code == 0 and bool(dirt_out.strip())
 
     origin_code, origin_out, _ = run_git(repo_path, "remote", "get-url", "origin")
-    origin_url = origin_out.strip() if origin_code == 0 and origin_out.strip() else None
+    # Redacted at the source so a credentialed origin never reaches output or JSON.
+    origin_raw = origin_out.strip() if origin_code == 0 else ""
+    origin_url = redact_url_credentials(origin_raw) if origin_raw else None
 
     ahead, behind = 0, 0
     if upstream and not detached:

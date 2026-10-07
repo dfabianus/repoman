@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- HTTPS clones and fetches no longer put the token in the URL; it is passed per `git` call
+  through the environment, so it stays out of `.git/config` and process listings.
+- `local sync` rewrites origin URLs that older versions stored with a token to the clean URL.
+- Credentials in origin URLs are redacted in `local sync` and `local status` output.
+
 ## v0.5.0 - 2026-09-05
 
 - `token_command`: resolve a forge token from a CLI such as `gh auth token`, so tokens never live on disk.

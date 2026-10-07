@@ -17,8 +17,13 @@ from repoman.cache import (
     write_discovery_cache,
 )
 from repoman.config import apply_defaults, load_yaml, validate
-from repoman.local.clone_url import authenticated_clone_url
-from repoman.local.git_ops import git_clone, git_fetch, git_merge_ff_only
+from repoman.local.clone_url import (
+    clone_url,
+    git_auth_env,
+    has_repoman_credentials,
+    redact_secret,
+)
+from repoman.local.git_ops import git_clone, git_fetch, git_merge_ff_only, git_set_origin_url
 from repoman.local.planner import plan_local_sync
 from repoman.local.status_probe import probe_worktree
 from repoman.local.status_report import RepoStatusSnapshot, summarize_local_repo_status
@@ -598,28 +603,22 @@ def run_local(
     cred_path = ctx.credentials_path
     repos_sorted = list(ctx.targets)
 
-    def resolve_clone_url(repo: WorkspaceRepo) -> str:
+    def resolve_repo_token(repo: WorkspaceRepo) -> str | None:
+        if repo.clone_protocol.strip().lower() == "ssh":
+            return None
         rc_any_inner = remotes.get(repo.remote_name)
-        tok_inner: str | None = None
-        if isinstance(rc_any_inner, dict):
-            try:
-                tt, _s = resolve_token(
-                    repo.remote_name,
-                    rc_any_inner,
-                    cli_token=None,
-                    credentials_file=cred_path,
-                )
-                tok_inner = tt if isinstance(tt, str) and tt.strip() else None
-            except (PermissionError, TokenCommandError):
-                tok_inner = None
-        exe = authenticated_clone_url(
-            forge_kind=repo.forge_kind,
-            clone_protocol=repo.clone_protocol,
-            ssh_url=repo.ssh_clone,
-            https_url=repo.https_clone,
-            token=tok_inner,
-        )
-        return exe
+        if not isinstance(rc_any_inner, dict):
+            return None
+        try:
+            tt, _s = resolve_token(
+                repo.remote_name,
+                rc_any_inner,
+                cli_token=None,
+                credentials_file=cred_path,
+            )
+        except (PermissionError, TokenCommandError):
+            return None
+        return tt if isinstance(tt, str) and tt.strip() else None
 
     def process_one(repo: WorkspaceRepo) -> list[StatusRecord]:
         rows: list[StatusRecord] = []
@@ -629,7 +628,22 @@ def run_local(
             rows.append(StatusRecord("ERROR", repo.subject, f"unknown remote {repo.remote_name!r}"))
             return rows
 
-        exec_url = resolve_clone_url(repo)
+        exec_url = clone_url(
+            clone_protocol=repo.clone_protocol,
+            ssh_url=repo.ssh_clone,
+            https_url=repo.https_clone,
+        )
+        token = resolve_repo_token(repo)
+        auth_env = git_auth_env(
+            forge_kind=repo.forge_kind,
+            clone_protocol=repo.clone_protocol,
+            https_url=repo.https_clone,
+            token=token,
+            base_env=os.environ,
+        )
+
+        def git_error(err: str, out: str, fallback: str) -> str:
+            return redact_secret(err or out or fallback, token)
 
         facts_probe = probe_worktree(repo_dir)
         if facts_probe.path_missing:
@@ -640,14 +654,38 @@ def run_local(
             if not write:
                 rows.append(StatusRecord("WOULD UPDATE", repo.subject, detail))
                 return rows
-            code_clone, stdout_c, stderr_c = git_clone(exec_url, repo_dir)
+            code_clone, stdout_c, stderr_c = git_clone(exec_url, repo_dir, env=auth_env)
             if code_clone != 0:
                 rows.append(
-                    StatusRecord("ERROR", repo.subject, stderr_c or stdout_c or "git clone failed"),
+                    StatusRecord(
+                        "ERROR", repo.subject, git_error(stderr_c, stdout_c, "git clone failed")
+                    ),
                 )
                 return rows
             rows.append(StatusRecord("UPDATED", repo.subject, "cloned"))
             return rows
+
+        if facts_probe.origin_url and has_repoman_credentials(
+            facts_probe.origin_url,
+            forge_kind=repo.forge_kind,
+            expected_https_url=repo.https_clone,
+        ):
+            # Clones made by repoman <= 0.5 carry the token in the origin URL.
+            scrub_detail = "remove token from origin URL"
+            if not write:
+                rows.append(StatusRecord("WOULD UPDATE", repo.subject, scrub_detail))
+            else:
+                sc, sout, serr = git_set_origin_url(repo_dir, repo.https_clone)
+                if sc != 0:
+                    rows.append(
+                        StatusRecord(
+                            "ERROR",
+                            repo.subject,
+                            git_error(serr, sout, "git remote set-url failed"),
+                        ),
+                    )
+                    return rows
+                rows.append(StatusRecord("UPDATED", repo.subject, "removed token from origin URL"))
 
         plan = plan_local_sync(
             subject=repo.subject,
@@ -675,16 +713,22 @@ def run_local(
         if not write:
             rows.append(StatusRecord("WOULD UPDATE", repo.subject, pull_desc))
             return rows
-        fc, fout, ferr = git_fetch(repo_dir)
+        fc, fout, ferr = git_fetch(repo_dir, env=auth_env)
         if fc != 0:
-            rows.append(StatusRecord("ERROR", repo.subject, ferr or fout or "git fetch failed"))
+            rows.append(
+                StatusRecord("ERROR", repo.subject, git_error(ferr, fout, "git fetch failed"))
+            )
             return rows
 
         verbs = ["fetch"]
         if plan.should_merge_ff and strategy == "ff-only":
             mc, _, merr = git_merge_ff_only(repo_dir)
             if mc != 0:
-                rows.append(StatusRecord("ERROR", repo.subject, merr or "merge --ff-only failed"))
+                rows.append(
+                    StatusRecord(
+                        "ERROR", repo.subject, git_error(merr, "", "merge --ff-only failed")
+                    )
+                )
                 return rows
             verbs.append("merge_ff")
 
