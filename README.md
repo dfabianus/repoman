@@ -121,7 +121,7 @@ uv run mkdocs build --strict
 uv run mkdocs serve    # local docs at http://127.0.0.1:8000
 ```
 
-Contributor rules: **[`AGENTS.md`](AGENTS.md)** (backlog in **[`.adr.md`](.adr.md)**, chatlogs under **`docs/chatlogs/`**).
+Contributor rules: **[`AGENTS.md`](AGENTS.md)**.
 
 ## License
 

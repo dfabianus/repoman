@@ -144,7 +144,6 @@ repoman/
   uv.lock
   README.md
   AGENTS.md                  # Contributor- und Agenten-Richtlinien
-  .adr.md                    # Living backlog (Checkboxen)
   src/repoman/
     __init__.py
     __main__.py
@@ -409,7 +408,7 @@ repoman mirrors lock   [--write]                # schreibt repoman.lock
 ```
 **Onboarding:** `repoman config init` erzeugt `repoman.yaml` aus dem Bundled-Template;
 `repoman config set` ändert dotted Keys (Preview ohne `--write`). Ein interaktiver Setup-Wizard
-ist für eine spätere Phase vorgesehen (siehe `.adr.md`).
+ist für eine spätere Phase vorgesehen.
 
 Bewusst **nicht** im MVP:
 
@@ -665,8 +664,6 @@ GitHub Actions (Spiegel zu GitLab CI, falls Repo dort liegt):
 | 5 | `mirrors lock`, Drift-Erkennung, bessere Doctor-Checks | Lock-File reproduziert Server-Zustand |
 | 6 | `local_push`-Backend, `--submodules`, `--fix-remotes` | Fallback-Mirror lauffähig |
 | 7 | mkdocs-Doku, `uv tool install`-fähiger Release | `pipx`/`uv tool install repoman-cli` aus PyPI |
-
-Pro Phase: kleiner MR, Tests, `.adr.md`-Häkchen, Doku-Update.
 
 ## 13. Integration mit anderen Werkzeugen
 
