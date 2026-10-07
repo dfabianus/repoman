@@ -40,6 +40,7 @@ flowchart LR
 - [Getting started](https://github.com/dfabianus/repoman/blob/main/docs/getting-started.md): install, first config, tokens, first sync.
 - [Design](https://github.com/dfabianus/repoman/blob/main/docs/design/repoman.md): architecture, schema, key decisions.
 - [Examples](https://github.com/dfabianus/repoman/blob/main/docs/examples.md): sample commands and `include` / `exclude` recipes.
+- [Changelog](https://github.com/dfabianus/repoman/blob/main/CHANGELOG.md): what changed per release.
 - [Documentation site](https://dfabianus.github.io/repoman/): the same docs, rendered.
 
 MIT licensed, see [LICENSE](https://github.com/dfabianus/repoman/blob/main/LICENSE).
